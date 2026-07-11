@@ -14,6 +14,11 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
+func SetupTestDB(t *testing.T) *DB {
+	t.Helper()
+	return &DB{pool: setupTestPool(t)}
+}
+
 func setupTestPool(t *testing.T) *pgxpool.Pool {
 	t.Helper()
 
@@ -78,7 +83,7 @@ func applyMigrations(ctx context.Context, pool *pgxpool.Pool) error {
 
 func newTestDB(t *testing.T) *DB {
 	t.Helper()
-	return &DB{pool: setupTestPool(t)}
+	return SetupTestDB(t)
 }
 
 func createTestUser(t *testing.T, db *DB, login string) int64 {

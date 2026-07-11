@@ -19,7 +19,6 @@ const (
 	saltLen      = 16
 )
 
-// Hash returns an Argon2id hash in PHC string format.
 func Hash(password string) (string, error) {
 	salt := make([]byte, saltLen)
 	if _, err := rand.Read(salt); err != nil {
@@ -35,7 +34,6 @@ func Hash(password string) (string, error) {
 		argon2.Version, argonMemory, argonTime, argonThreads, b64Salt, b64Hash), nil
 }
 
-// Verify checks a password against an Argon2id PHC hash.
 func Verify(password, encoded string) (bool, error) {
 	salt, hash, params, err := decodeHash(encoded)
 	if err != nil {

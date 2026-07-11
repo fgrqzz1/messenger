@@ -49,10 +49,24 @@ migrate -path migrations -database "$DATABASE_URL" up
 
 ### 3. Тесты
 
-Интеграционные тесты repository поднимают Postgres через testcontainers (нужен Docker):
+Интеграционные тесты repository и сквозной e2e-сценарий поднимают Postgres через testcontainers (нужен Docker):
 
 ```bash
 go test ./...
+```
+
+Сквозной сценарий (Этап 5) — `test/e2e/scenario_test.go`:
+
+1. Регистрация и логин двух пользователей (access + refresh token)
+2. Создание группового чата, добавление участника
+3. WebSocket: аутентификация первым фреймом, `send_message` → `ack` + `new_message`
+4. Идемпотентность по `client_msg_id` (проверка COUNT в таблице `messages`)
+5. Пагинация истории (`before_id`) для обоих участников
+6. Поиск по подстроке в чате
+7. Удаление участника: 403 для не-admin, 204 для admin
+
+```bash
+go test -v ./test/e2e/...
 ```
 
 ### 4. Сборка и запуск
