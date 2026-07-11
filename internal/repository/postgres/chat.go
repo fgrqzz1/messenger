@@ -102,6 +102,34 @@ func (r *ChatRepository) CreateGroup(ctx context.Context, title string, createdB
 	return &chat, nil
 }
 
+func (r *ChatRepository) GetDirectByUsers(ctx context.Context, userAID, userBID int64) (*domain.Chat, error) {
+	const q = `
+		SELECT id, type, title, user_a_id, user_b_id, created_by, created_at
+		FROM chats
+		WHERE type = 'direct'
+		  AND LEAST(user_a_id, user_b_id) = LEAST($1::bigint, $2::bigint)
+		  AND GREATEST(user_a_id, user_b_id) = GREATEST($1::bigint, $2::bigint)
+	`
+
+	var chat domain.Chat
+	var chatType string
+	err := r.db.pool.QueryRow(ctx, q, userAID, userBID).Scan(
+		&chat.ID,
+		&chatType,
+		&chat.Title,
+		&chat.UserAID,
+		&chat.UserBID,
+		&chat.CreatedBy,
+		&chat.CreatedAt,
+	)
+	if err != nil {
+		return nil, mapError(err)
+	}
+	chat.Type = domain.ChatType(chatType)
+
+	return &chat, nil
+}
+
 func (r *ChatRepository) GetByID(ctx context.Context, id int64) (*domain.Chat, error) {
 	const q = `
 		SELECT id, type, title, user_a_id, user_b_id, created_by, created_at

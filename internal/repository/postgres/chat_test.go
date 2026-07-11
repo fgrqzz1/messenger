@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"messenger/internal/domain"
@@ -75,5 +76,32 @@ func TestChatRepository_CreateDirectAndListByUser(t *testing.T) {
 	_, err = userRepo.GetByID(ctx, aliceID)
 	if err != nil {
 		t.Fatalf("user still exists: %v", err)
+	}
+}
+
+func TestChatRepository_GetDirectByUsers(t *testing.T) {
+	db := newTestDB(t)
+	chatRepo := NewChatRepository(db)
+	ctx := context.Background()
+
+	aliceID := createTestUser(t, db, "alice-direct")
+	bobID := createTestUser(t, db, "bob-direct")
+
+	created, err := chatRepo.CreateDirect(ctx, aliceID, bobID)
+	if err != nil {
+		t.Fatalf("CreateDirect: %v", err)
+	}
+
+	got, err := chatRepo.GetDirectByUsers(ctx, bobID, aliceID)
+	if err != nil {
+		t.Fatalf("GetDirectByUsers reversed: %v", err)
+	}
+	if got.ID != created.ID {
+		t.Fatalf("id = %d, want %d", got.ID, created.ID)
+	}
+
+	_, err = chatRepo.CreateDirect(ctx, aliceID, bobID)
+	if !errors.Is(err, domain.ErrConflict) {
+		t.Fatalf("duplicate CreateDirect error = %v, want ErrConflict", err)
 	}
 }
