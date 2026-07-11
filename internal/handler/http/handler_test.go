@@ -178,6 +178,7 @@ type mockMemberRepo struct {
 	removeFn      func(ctx context.Context, chatID, userID int64) error
 	getFn         func(ctx context.Context, chatID, userID int64) (*domain.ChatMember, error)
 	listUserIDsFn func(ctx context.Context, chatID int64) ([]int64, error)
+	listByChatFn  func(ctx context.Context, chatID int64) ([]domain.ChatMember, error)
 }
 
 func (m *mockMemberRepo) Add(ctx context.Context, member *domain.ChatMember) error {
@@ -192,6 +193,12 @@ func (m *mockMemberRepo) Get(ctx context.Context, chatID, userID int64) (*domain
 func (m *mockMemberRepo) ListUserIDs(ctx context.Context, chatID int64) ([]int64, error) {
 	if m.listUserIDsFn != nil {
 		return m.listUserIDsFn(ctx, chatID)
+	}
+	return nil, nil
+}
+func (m *mockMemberRepo) ListByChat(ctx context.Context, chatID int64) ([]domain.ChatMember, error) {
+	if m.listByChatFn != nil {
+		return m.listByChatFn(ctx, chatID)
 	}
 	return nil, nil
 }

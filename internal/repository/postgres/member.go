@@ -95,4 +95,46 @@ func (r *MemberRepository) ListUserIDs(ctx context.Context, chatID int64) ([]int
 	return ids, nil
 }
 
+func (r *MemberRepository) ListByChat(ctx context.Context, chatID int64) ([]domain.ChatMember, error) {
+	const q = `
+		SELECT cm.chat_id, cm.user_id, u.login, cm.role, cm.joined_at
+		FROM chat_members cm
+		JOIN users u ON u.id = cm.user_id
+		WHERE cm.chat_id = $1
+		ORDER BY cm.user_id
+	`
+
+	rows, err := r.db.pool.Query(ctx, q, chatID)
+	if err != nil {
+		return nil, fmt.Errorf("postgres: %w", err)
+	}
+	defer rows.Close()
+
+	var members []domain.ChatMember
+	for rows.Next() {
+		var member domain.ChatMember
+		var role string
+		if err := rows.Scan(
+			&member.ChatID,
+			&member.UserID,
+			&member.Login,
+			&role,
+			&member.JoinedAt,
+		); err != nil {
+			return nil, fmt.Errorf("postgres: scan chat member: %w", err)
+		}
+		member.Role = domain.MemberRole(role)
+		members = append(members, member)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("postgres: %w", err)
+	}
+
+	if members == nil {
+		members = []domain.ChatMember{}
+	}
+
+	return members, nil
+}
+
 var _ domain.MemberRepository = (*MemberRepository)(nil)

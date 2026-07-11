@@ -27,4 +27,5 @@ type MemberRepository interface {
 	Remove(ctx context.Context, chatID, userID int64) error
 	Get(ctx context.Context, chatID, userID int64) (*ChatMember, error)
 	ListUserIDs(ctx context.Context, chatID int64) ([]int64, error)
+	ListByChat(ctx context.Context, chatID int64) ([]ChatMember, error)
 }

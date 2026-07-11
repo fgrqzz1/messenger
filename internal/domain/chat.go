@@ -29,6 +29,7 @@ type Chat struct {
 type ChatMember struct {
 	ChatID   int64
 	UserID   int64
+	Login    string
 	Role     MemberRole
 	JoinedAt time.Time
 }

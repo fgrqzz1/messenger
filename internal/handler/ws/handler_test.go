@@ -81,6 +81,9 @@ func (m *mockMemberRepo) ListUserIDs(ctx context.Context, chatID int64) ([]int64
 	}
 	return nil, nil
 }
+func (m *mockMemberRepo) ListByChat(context.Context, int64) ([]domain.ChatMember, error) {
+	return nil, nil
+}
 
 func newWSTestServer(t *testing.T, messages *mockMessageRepo, members *mockMemberRepo, authTimeout time.Duration) *httptest.Server {
 	t.Helper()
