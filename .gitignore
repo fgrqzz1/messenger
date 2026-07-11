@@ -1,0 +1,33 @@
+# Binaries
+/bin/
+/server
+*.exe
+*.test
+
+# Env / secrets
+.env
+.env.local
+*.pem
+*.key
+
+# Go
+/vendor/
+go.work
+go.work.sum
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+
+# Docker
+docker-compose.override.yml
+
+# Logs
+*.log
+
+.cursor/
+docs/
