@@ -16,7 +16,7 @@ type CreateChatModalProps = {
 
 export function CreateChatModal({ open, onClose }: CreateChatModalProps) {
   const titleId = useId()
-  const { reloadChats } = useChats()
+  const { upsertCreatedChat } = useChats()
   const { setActiveChatId, requestOpenMembersPanel } = useActiveChat()
   const { isNarrow, closeSidebar } = useSidebar()
   const [tab, setTab] = useState<Tab>('direct')
@@ -53,8 +53,7 @@ export function CreateChatModal({ open, onClose }: CreateChatModalProps) {
     return null
   }
 
-  const openCreatedChat = async (chatId: number, openMembers: boolean) => {
-    await reloadChats()
+  const openCreatedChat = (chatId: number, openMembers: boolean) => {
     setActiveChatId(chatId)
     if (openMembers) {
       requestOpenMembersPanel()
@@ -70,7 +69,8 @@ export function CreateChatModal({ open, onClose }: CreateChatModalProps) {
     setError(null)
     try {
       const chat = await createDirectChat(user.id)
-      await openCreatedChat(chat.id, false)
+      upsertCreatedChat(chat, user.login)
+      openCreatedChat(chat.id, false)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Не удалось создать чат')
     } finally {
@@ -90,7 +90,8 @@ export function CreateChatModal({ open, onClose }: CreateChatModalProps) {
     setError(null)
     try {
       const chat = await createGroupChat(title)
-      await openCreatedChat(chat.id, true)
+      upsertCreatedChat(chat)
+      openCreatedChat(chat.id, true)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Не удалось создать группу')
     } finally {

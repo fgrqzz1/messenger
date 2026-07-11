@@ -31,19 +31,21 @@ type WebSocketContextValue = {
   status: WsStatus
   sendMessage: (chatId: number, body: string) => string | null
   registerChatHandlers: (handlers: ChatMessageHandlers | null) => void
-  updateChatPreview: (chatId: number, body: string, createdAt: string) => void
+  updateChatPreview: (chatId: number, body: string, createdAt: string) => boolean
 }
 
 const WebSocketContext = createContext<WebSocketContextValue | null>(null)
 
 type WebSocketProviderProps = {
   children: ReactNode
-  updateChatPreview: (chatId: number, body: string, createdAt: string) => void
+  updateChatPreview: (chatId: number, body: string, createdAt: string) => boolean
+  ensureChatFromMessage: (chatId: number) => Promise<void>
 }
 
 export function WebSocketProvider({
   children,
   updateChatPreview,
+  ensureChatFromMessage,
 }: WebSocketProviderProps) {
   const { isAuthenticated, currentUser } = useAuth()
   const { activeChatId } = useActiveChat()
@@ -52,9 +54,11 @@ export function WebSocketProvider({
   const chatHandlersRef = useRef<ChatMessageHandlers | null>(null)
   const activeChatIdRef = useRef(activeChatId)
   const updateChatPreviewRef = useRef(updateChatPreview)
+  const ensureChatFromMessageRef = useRef(ensureChatFromMessage)
 
   activeChatIdRef.current = activeChatId
   updateChatPreviewRef.current = updateChatPreview
+  ensureChatFromMessageRef.current = ensureChatFromMessage
 
   const registerChatHandlers = useCallback((handlers: ChatMessageHandlers | null) => {
     chatHandlersRef.current = handlers
@@ -112,11 +116,15 @@ export function WebSocketProvider({
         chatHandlersRef.current?.markAcked(frame.client_msg_id, frame.server_id)
       },
       onNewMessage: (frame: WsNewMessageFrame) => {
-        updateChatPreviewRef.current(
+        const updated = updateChatPreviewRef.current(
           frame.chat_id,
           frame.message.body,
           frame.message.created_at,
         )
+        if (!updated) {
+          // Чат ещё не в локальном списке (новый direct / добавили в группу + первое сообщение).
+          void ensureChatFromMessageRef.current(frame.chat_id)
+        }
 
         const openChatId = activeChatIdRef.current
         if (openChatId === frame.chat_id) {
