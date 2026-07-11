@@ -3,10 +3,10 @@ package domain
 import "errors"
 
 var (
-	ErrNotFound           = errors.New("not found")
-	ErrConflict           = errors.New("conflict")
-	ErrForbidden          = errors.New("forbidden")
-	ErrUnauthorized       = errors.New("unauthorized")
-	ErrInvalidCredentials = errors.New("invalid credentials")
-	ErrValidation         = errors.New("validation error")
+	ErrNotFound           = errors.New("Не найдено")
+	ErrConflict           = errors.New("Конфликт")
+	ErrForbidden          = errors.New("Нет доступа")
+	ErrUnauthorized       = errors.New("Не авторизован")
+	ErrInvalidCredentials = errors.New("Неверные логин или пароль")
+	ErrValidation         = errors.New("Неверные данные")
 )
