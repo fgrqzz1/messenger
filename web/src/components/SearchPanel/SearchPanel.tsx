@@ -1,3 +1,4 @@
+import { Search, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { searchMessages } from '../../api/search'
 import type { Message } from '../../types/domain'
@@ -80,21 +81,24 @@ export function SearchPanel({
   return (
     <section className={styles.searchPanel} aria-label="Поиск по чату">
       <div className={styles.searchBar}>
-        <input
-          className={styles.searchInput}
-          type="search"
-          placeholder="Поиск в чате…"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          autoFocus
-        />
+        <div className={styles.inputWrap}>
+          <Search className={styles.searchIcon} size={16} strokeWidth={1.75} aria-hidden />
+          <input
+            className={styles.searchInput}
+            type="search"
+            placeholder="Поиск в чате…"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            autoFocus
+          />
+        </div>
         <button
           type="button"
           className={styles.closeBtn}
           aria-label="Закрыть поиск"
           onClick={onClose}
         >
-          ×
+          <X size={16} strokeWidth={1.75} aria-hidden />
         </button>
       </div>
 

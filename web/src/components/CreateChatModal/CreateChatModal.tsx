@@ -1,4 +1,6 @@
+import { X } from 'lucide-react'
 import { useEffect, useId, useState, type FormEvent } from 'react'
+import { createPortal } from 'react-dom'
 import { createDirectChat, createGroupChat } from '../../api/chats'
 import { useActiveChat } from '../../context/ActiveChatContext'
 import { useSidebar } from '../../context/SidebarContext'
@@ -99,7 +101,7 @@ export function CreateChatModal({ open, onClose }: CreateChatModalProps) {
     }
   }
 
-  return (
+  return createPortal(
     <div className={styles.overlay} role="presentation" onClick={onClose}>
       <div
         className={styles.modal}
@@ -118,7 +120,7 @@ export function CreateChatModal({ open, onClose }: CreateChatModalProps) {
             aria-label="Закрыть"
             onClick={onClose}
           >
-            ×
+            <X size={16} strokeWidth={1.75} aria-hidden />
           </button>
         </div>
 
@@ -191,6 +193,7 @@ export function CreateChatModal({ open, onClose }: CreateChatModalProps) {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

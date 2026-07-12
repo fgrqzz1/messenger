@@ -1,9 +1,13 @@
 .membersPanel {
+  position: relative;
+  z-index: var(--z-panel);
   flex-shrink: 0;
   align-self: stretch;
   width: 0;
   overflow: hidden;
-  background: var(--bg-sidebar);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border-left: 1px solid transparent;
   transition:
     width 0.22s ease,
@@ -12,7 +16,7 @@
 
 .open {
   width: 300px;
-  border-left-color: var(--border);
+  border-left-color: var(--glass-border);
 }
 
 .closed {
@@ -51,11 +55,9 @@
   justify-content: center;
   width: 28px;
   height: 28px;
-  font-size: 18px;
-  line-height: 1;
   color: var(--text-secondary);
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg-elevated) 70%, transparent);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-sm);
 }
 

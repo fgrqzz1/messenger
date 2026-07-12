@@ -1,19 +1,83 @@
+.appShell {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg-primary);
+}
+
+/* Mounted once at app root — never unmounts with chat/empty/profile/login */
+.blobs {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-background);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  will-change: transform;
+  pointer-events: none;
+}
+
+.blobA {
+  width: min(56vw, 520px);
+  height: min(56vw, 520px);
+  top: -12%;
+  right: 8%;
+  background: var(--blob-accent);
+  animation: blobDriftA 28s ease-in-out infinite alternate;
+}
+
+.blobB {
+  width: min(48vw, 440px);
+  height: min(48vw, 440px);
+  bottom: -18%;
+  left: 4%;
+  background: var(--blob-secondary);
+  animation: blobDriftB 36s ease-in-out infinite alternate;
+}
+
+.blobC {
+  width: min(40vw, 360px);
+  height: min(40vw, 360px);
+  top: 42%;
+  left: 38%;
+  background: var(--blob-accent);
+  opacity: 0.7;
+  animation: blobDriftC 32s ease-in-out infinite alternate;
+}
+
+.appContent {
+  position: relative;
+  z-index: var(--z-content);
+  height: 100%;
+  min-height: 0;
+}
+
 .layout {
+  position: relative;
   display: flex;
   height: 100%;
   overflow: hidden;
+  background: transparent;
 }
 
 .main {
+  position: relative;
+  z-index: var(--z-content);
   display: flex;
   flex: 1;
   min-width: 0;
+  background: transparent;
 }
 
 .backdrop {
   position: fixed;
   inset: 0;
-  z-index: 20;
+  z-index: var(--z-panel);
   background: color-mix(in srgb, var(--bg-primary) 55%, transparent);
   border: none;
   cursor: pointer;
@@ -36,7 +100,7 @@
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  z-index: 100;
+  z-index: var(--z-modal);
 }
 
 .devSwitch:hover {

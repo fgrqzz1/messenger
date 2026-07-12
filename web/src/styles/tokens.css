@@ -8,6 +8,13 @@
   --accent: #6e5bff;
   --online: #3dd68c;
 
+  --glass-bg: rgba(34, 36, 45, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-blur: blur(20px) saturate(160%);
+
+  --blob-accent: rgba(110, 91, 255, 0.28);
+  --blob-secondary: rgba(61, 214, 140, 0.16);
+
   --font-heading: 'Manrope', system-ui, sans-serif;
   --font-body: 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
@@ -16,4 +23,10 @@
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
+
+  /* Stacking: background < content < panels < modal */
+  --z-background: 0;
+  --z-content: 1;
+  --z-panel: 10;
+  --z-modal: 100;
 }

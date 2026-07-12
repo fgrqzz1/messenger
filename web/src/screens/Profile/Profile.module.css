@@ -3,7 +3,7 @@
   align-items: flex-start;
   justify-content: center;
   min-height: 100%;
-  background: var(--bg-primary);
+  background: transparent;
   padding: 24px;
   overflow-y: auto;
 }

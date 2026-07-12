@@ -1,3 +1,4 @@
+import { X } from 'lucide-react'
 import { useMemo } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useChatMembers } from '../../hooks/useChatMembers'
@@ -50,7 +51,7 @@ export function MembersPanel({ chatId, open, onClose }: MembersPanelProps) {
             aria-label="Закрыть"
             onClick={onClose}
           >
-            ×
+            <X size={16} strokeWidth={1.75} aria-hidden />
           </button>
         </div>
 

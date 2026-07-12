@@ -1,3 +1,4 @@
+import { Plus, Search } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { getChatDisplayName } from '../../api/chats'
 import { useActiveChat } from '../../context/ActiveChatContext'
@@ -9,10 +10,34 @@ import { chatHasUnread } from '../../utils/deliveryStatus'
 import { formatChatTime } from '../../utils/formatChatTime'
 import { Avatar } from '../Avatar/Avatar'
 import { CreateChatModal } from '../CreateChatModal/CreateChatModal'
+import { EmptyState } from '../EmptyState/EmptyState'
+import { ChatListSkeleton } from '../Skeleton/Skeleton'
 import styles from './Sidebar.module.css'
 
 type SidebarProps = {
   onOpenProfile: () => void
+}
+
+function AppLogo() {
+  return (
+    <svg
+      className={styles.brandIcon}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <path
+        d="M5 7.5A2.5 2.5 0 0 1 7.5 5h9A2.5 2.5 0 0 1 19 7.5v6A2.5 2.5 0 0 1 16.5 16H11l-4 3v-3H7.5A2.5 2.5 0 0 1 5 13.5v-6Z"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinejoin="round"
+      />
+      <circle cx="9" cy="10.5" r="1" fill="currentColor" />
+      <circle cx="12" cy="10.5" r="1" fill="currentColor" />
+      <circle cx="15" cy="10.5" r="1" fill="currentColor" />
+    </svg>
+  )
 }
 
 export function Sidebar({ onOpenProfile }: SidebarProps) {
@@ -58,15 +83,22 @@ export function Sidebar({ onOpenProfile }: SidebarProps) {
     <aside
       className={`${styles.sidebar} ${isNarrow && sidebarOpen ? styles.sidebarOpen : ''}`}
     >
-      <div className={styles.searchWrap}>
+      <div className={styles.header}>
+        <div className={styles.brand}>
+          <AppLogo />
+          <span className={styles.brandName}>Messenger</span>
+        </div>
         <div className={styles.searchRow}>
-          <input
-            className={styles.search}
-            type="search"
-            placeholder="Поиск чатов…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+          <div className={styles.searchField}>
+            <Search className={styles.searchIcon} size={16} strokeWidth={1.75} aria-hidden />
+            <input
+              className={styles.search}
+              type="search"
+              placeholder="Поиск чатов…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
           <button
             type="button"
             className={styles.createBtn}
@@ -74,60 +106,68 @@ export function Sidebar({ onOpenProfile }: SidebarProps) {
             title="Создать чат"
             onClick={() => setCreateOpen(true)}
           >
-            +
+            <Plus size={18} strokeWidth={2} aria-hidden />
           </button>
         </div>
       </div>
 
-      <ul className={styles.chatList}>
-        {loading && <li className={styles.stateMessage}>Загрузка…</li>}
-        {!loading && error && <li className={styles.stateMessage}>{error}</li>}
-        {!loading && !error && filteredChats.length === 0 && (
-          <li className={styles.stateMessage}>
-            {search.trim() ? 'Ничего не найдено' : 'Нет чатов'}
-          </li>
-        )}
-        {!loading &&
-          !error &&
-          filteredChats.map((chat) => {
-            const unread = chatHasUnread(chat)
-            const name = getChatDisplayName(chat, peerNames)
-            const avatarId =
-              chat.type === 'direct' && peerUserIds[chat.id] != null
-                ? peerUserIds[chat.id]!
-                : chat.id
-            return (
-              <li
-                key={chat.id}
-                className={`${styles.chatItem} ${chat.id === activeChatId ? styles.chatItemActive : ''} ${unread ? styles.chatItemUnread : ''}`}
-                onClick={() => selectChat(chat.id)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') selectChat(chat.id)
-                }}
-                role="button"
-                tabIndex={0}
-              >
-                <Avatar userId={avatarId} login={name} size="sm" />
-                <div className={styles.chatBody}>
-                  <div className={styles.chatRow}>
-                    <h2 className={styles.chatName}>{name}</h2>
-                    <div className={styles.chatMeta}>
-                      {unread && (
-                        <span className={styles.unreadDot} aria-label="Есть непрочитанные" />
-                      )}
-                      <span className={styles.chatTime}>
-                        {formatChatTime(chat.last_message_at)}
-                      </span>
-                    </div>
-                  </div>
-                  <p className={styles.chatPreview}>
-                    {chat.last_message_body ?? 'Нет сообщений'}
-                  </p>
-                </div>
+      <div className={styles.listRegion}>
+        {loading ? (
+          <ChatListSkeleton />
+        ) : (
+          <ul className={styles.chatList}>
+            {error && <li className={styles.stateMessage}>{error}</li>}
+            {!error && filteredChats.length === 0 && (
+              <li className={styles.emptyItem}>
+                <EmptyState
+                  variant="noChats"
+                  compact
+                  title={search.trim() ? 'Ничего не найдено' : 'Нет чатов'}
+                />
               </li>
-            )
-          })}
-      </ul>
+            )}
+            {!error &&
+              filteredChats.map((chat) => {
+                const unread = chatHasUnread(chat)
+                const name = getChatDisplayName(chat, peerNames)
+                const avatarId =
+                  chat.type === 'direct' && peerUserIds[chat.id] != null
+                    ? peerUserIds[chat.id]!
+                    : chat.id
+                return (
+                  <li
+                    key={chat.id}
+                    className={`${styles.chatItem} ${chat.id === activeChatId ? styles.chatItemActive : ''} ${unread ? styles.chatItemUnread : ''}`}
+                    onClick={() => selectChat(chat.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') selectChat(chat.id)
+                    }}
+                    role="button"
+                    tabIndex={0}
+                  >
+                    <Avatar userId={avatarId} login={name} size="sm" />
+                    <div className={styles.chatBody}>
+                      <div className={styles.chatRow}>
+                        <h2 className={styles.chatName}>{name}</h2>
+                        <div className={styles.chatMeta}>
+                          {unread && (
+                            <span className={styles.unreadDot} aria-label="Есть непрочитанные" />
+                          )}
+                          <span className={styles.chatTime}>
+                            {formatChatTime(chat.last_message_at)}
+                          </span>
+                        </div>
+                      </div>
+                      <p className={styles.chatPreview}>
+                        {chat.last_message_body ?? 'Нет сообщений'}
+                      </p>
+                    </div>
+                  </li>
+                )
+              })}
+          </ul>
+        )}
+      </div>
 
       <footer className={styles.footer}>
         <button
@@ -147,9 +187,7 @@ export function Sidebar({ onOpenProfile }: SidebarProps) {
           <span
             className={`${styles.statusDot} ${isOnline ? styles.statusDotOnline : styles.statusDotReconnecting}`}
             aria-hidden="true"
-          >
-            {isOnline ? '●' : '○'}
-          </span>
+          />
           <span>{isOnline ? 'online' : 'reconnecting'}</span>
         </div>
       </footer>

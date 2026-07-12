@@ -1,3 +1,4 @@
+import { Info, Menu, Search, Send } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import { getChatDisplayName } from '../../api/chats'
 import { useActiveChat } from '../../context/ActiveChatContext'
@@ -11,10 +12,12 @@ import { useWebSocket } from '../../hooks/useWebSocket'
 import { MembersPanel } from '../MembersPanel/MembersPanel'
 import { SearchPanel } from '../SearchPanel/SearchPanel'
 import { Avatar } from '../Avatar/Avatar'
+import { EmptyState } from '../EmptyState/EmptyState'
 import {
   MessageStatus,
   toMessageStatusKind,
 } from '../MessageStatus/MessageStatus'
+import { MessageListSkeletonItems } from '../Skeleton/Skeleton'
 import { resolveOwnDeliveryStatus } from '../../utils/deliveryStatus'
 import { formatMessageTime } from '../../utils/formatMessageTime'
 import styles from './ChatWindow.module.css'
@@ -142,7 +145,7 @@ export function ChatWindow({ chatId, chatTitle, chatType, avatarUserId }: ChatWi
               aria-label="Список чатов"
               onClick={toggleSidebar}
             >
-              ☰
+              <Menu size={18} strokeWidth={1.75} aria-hidden />
             </button>
           )}
           <button
@@ -167,7 +170,7 @@ export function ChatWindow({ chatId, chatTitle, chatType, avatarUserId }: ChatWi
                 setSearchOpen((open) => !open)
               }}
             >
-              ⌕
+              <Search size={16} strokeWidth={1.75} aria-hidden />
             </button>
             <button
               type="button"
@@ -179,13 +182,15 @@ export function ChatWindow({ chatId, chatTitle, chatType, avatarUserId }: ChatWi
                 setMembersOpen((open) => !open)
               }}
             >
-              i
+              <Info size={16} strokeWidth={1.75} aria-hidden />
             </button>
           </div>
         </header>
 
         {chatId === null ? (
-          <div className={styles.emptyState}>Выберите чат в списке слева</div>
+          <div className={styles.emptyState}>
+            <EmptyState variant="selectChat" title="Выберите чат в списке слева" />
+          </div>
         ) : (
           <>
             {searchOpen && (
@@ -208,9 +213,7 @@ export function ChatWindow({ chatId, chatTitle, chatType, avatarUserId }: ChatWi
                 {loadingMore && (
                   <li className={styles.loadMoreHint}>Загрузка…</li>
                 )}
-                {loading && messages.length === 0 && (
-                  <li className={styles.stateMessage}>Загрузка сообщений…</li>
-                )}
+                {loading && messages.length === 0 && <MessageListSkeletonItems />}
                 {!loading && !error && messages.length === 0 && (
                   <li className={styles.stateMessage}>Нет сообщений</li>
                 )}
@@ -280,7 +283,7 @@ export function ChatWindow({ chatId, chatTitle, chatType, avatarUserId }: ChatWi
             aria-label="Отправить"
             onClick={handleSend}
           >
-            ➤
+            <Send size={18} strokeWidth={1.75} aria-hidden />
           </button>
         </div>
       </div>

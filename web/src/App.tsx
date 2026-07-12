@@ -12,6 +12,16 @@ import styles from './App.module.css'
 
 type AppScreen = 'chats' | 'profile'
 
+function BackgroundBlobs() {
+  return (
+    <div className={styles.blobs} aria-hidden="true">
+      <div className={`${styles.blob} ${styles.blobA}`} />
+      <div className={`${styles.blob} ${styles.blobB}`} />
+      <div className={`${styles.blob} ${styles.blobC}`} />
+    </div>
+  )
+}
+
 function MessengerLayout({ onOpenProfile }: { onOpenProfile: () => void }) {
   const { updateChatPreview, advanceMyReadCursor, ensureChatFromMessage } = useChats()
   const { isNarrow, sidebarOpen, closeSidebar } = useSidebar()
@@ -71,7 +81,12 @@ function AppContent() {
 export default function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <div className={styles.appShell}>
+        <BackgroundBlobs />
+        <div className={styles.appContent}>
+          <AppContent />
+        </div>
+      </div>
     </AuthProvider>
   )
 }

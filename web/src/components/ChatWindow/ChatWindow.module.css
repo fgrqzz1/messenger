@@ -4,7 +4,7 @@
   flex: 1;
   min-width: 0;
   height: 100%;
-  background: var(--bg-primary);
+  background: transparent;
   overflow: hidden;
 }
 
@@ -22,7 +22,10 @@
   justify-content: space-between;
   gap: 16px;
   padding: 14px 20px;
-  border-bottom: 1px solid var(--border);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--glass-border);
 }
 
 .menuBtn {
@@ -32,10 +35,9 @@
   width: 32px;
   height: 32px;
   flex-shrink: 0;
-  font-size: 16px;
   color: var(--text-secondary);
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg-elevated) 70%, transparent);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-sm);
 }
 
@@ -102,11 +104,11 @@
   justify-content: center;
   width: 32px;
   height: 32px;
-  font-size: 14px;
   color: var(--text-secondary);
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg-elevated) 70%, transparent);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-sm);
+  transition: color 120ms ease, border-color 120ms ease;
 }
 
 .headerBtn:hover {
@@ -120,7 +122,7 @@
 
 .headerBtnActive {
   color: var(--accent);
-  border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--glass-border));
 }
 
 .feedArea {
@@ -128,6 +130,8 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
+  /* Soft scrim — blobs stay visible under the feed; bubbles remain opaque */
+  background: color-mix(in srgb, var(--bg-primary) 82%, transparent);
 }
 
 .emptyState,
@@ -139,6 +143,9 @@
   padding: 24px;
   font-size: 14px;
   color: var(--text-secondary);
+  background: transparent;
+  position: relative;
+  z-index: auto;
 }
 
 .errorBanner {
@@ -168,12 +175,14 @@
   list-style: none;
   margin: 0;
   min-height: 0;
+  background: transparent;
 }
 
 .bubbleWrap {
   display: flex;
   flex-direction: column;
   max-width: 65%;
+  animation: messageIn 180ms ease-out both;
 }
 
 .bubbleWrapOwn {
@@ -239,7 +248,10 @@
   align-items: flex-end;
   gap: 10px;
   padding: 14px 20px;
-  border-top: 1px solid var(--border);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-top: 1px solid var(--glass-border);
 }
 
 .textarea {
@@ -250,8 +262,8 @@
   resize: none;
   overflow-y: auto;
   scrollbar-width: none;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg-elevated) 80%, transparent);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
   color: var(--text-primary);
   line-height: 1.45;
@@ -272,10 +284,18 @@
   width: 40px;
   height: 40px;
   flex-shrink: 0;
-  font-size: 18px;
   color: var(--text-primary);
   background: var(--accent);
   border-radius: var(--radius-md);
+  transition: transform 160ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.sendBtn:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+.sendBtn:active:not(:disabled) {
+  transform: scale(0.95);
 }
 
 .sendBtn:disabled {
