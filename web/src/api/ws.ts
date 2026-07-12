@@ -34,17 +34,13 @@ type WsHandlers = {
 const INITIAL_BACKOFF_MS = 1_000
 const MAX_BACKOFF_MS = 30_000
 
+/**
+ * WS URL всегда от адреса страницы (не от VITE_API_URL).
+ * Иначе абсолютный `http://localhost:8080` ломает доступ с других устройств в LAN:
+ * браузер пытается открыть WebSocket к localhost на самом устройстве.
+ * http→ws / https→wss; host+port — из window.location.host.
+ */
 function getWsUrl(): string {
-  const apiBase = import.meta.env.VITE_API_URL
-  if (apiBase) {
-    const url = new URL(apiBase, window.location.origin)
-    url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:'
-    url.pathname = '/ws'
-    url.search = ''
-    url.hash = ''
-    return url.toString()
-  }
-
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
   return `${protocol}//${window.location.host}/ws`
 }

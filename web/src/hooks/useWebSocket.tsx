@@ -19,6 +19,7 @@ import {
 import { useActiveChat } from '../context/ActiveChatContext'
 import { useAuth } from '../context/AuthContext'
 import type { DisplayMessage } from '../types/domain'
+import { createClientMsgId } from '../utils/clientMsgId'
 
 export type ChatMessageHandlers = {
   chatId: number
@@ -71,7 +72,7 @@ export function WebSocketProvider({
         return null
       }
 
-      const clientMsgId = crypto.randomUUID()
+      const clientMsgId = createClientMsgId()
       const optimistic: DisplayMessage = {
         id: 0,
         sender_id: currentUser.id,

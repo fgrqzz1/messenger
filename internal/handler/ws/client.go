@@ -23,6 +23,10 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin:     func(_ *http.Request) bool { return true },
 }
 
+func configureUpgrader(allowedOrigins []string) {
+	upgrader.CheckOrigin = newCheckOrigin(allowedOrigins)
+}
+
 type Client struct {
 	hub    *Hub
 	conn   *websocket.Conn

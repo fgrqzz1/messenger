@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -51,7 +52,9 @@ func main() {
 	svc := service.New(userRepo, chatRepo, messageRepo, memberRepo, jwtManager)
 
 	hub := wshandler.NewHub()
-	wsHandler := wshandler.NewHandler(svc, jwtManager, hub, wshandler.Config{}, logger)
+	wsHandler := wshandler.NewHandler(svc, jwtManager, hub, wshandler.Config{
+		AllowedOrigins: parseAllowedOrigins(os.Getenv("WS_ALLOWED_ORIGINS")),
+	}, logger)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
@@ -155,4 +158,21 @@ func envOrDefault(key, fallback string) string {
 		return v
 	}
 	return fallback
+}
+
+func parseAllowedOrigins(raw string) []string {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return nil
+	}
+
+	parts := strings.Split(raw, ",")
+	out := make([]string, 0, len(parts))
+	for _, part := range parts {
+		part = strings.TrimSpace(part)
+		if part != "" {
+			out = append(out, part)
+		}
+	}
+	return out
 }

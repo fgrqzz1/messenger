@@ -16,7 +16,8 @@ import (
 const defaultAuthTimeout = 5 * time.Second
 
 type Config struct {
-	AuthTimeout time.Duration
+	AuthTimeout     time.Duration
+	AllowedOrigins  []string
 }
 
 func (c Config) authTimeout() time.Duration {
@@ -35,6 +36,8 @@ type Handler struct {
 }
 
 func NewHandler(svc *service.Service, jwtManager *jwt.Manager, hub *Hub, cfg Config, logger *slog.Logger) *Handler {
+	configureUpgrader(cfg.AllowedOrigins)
+
 	if logger == nil {
 		logger = slog.Default()
 	}
