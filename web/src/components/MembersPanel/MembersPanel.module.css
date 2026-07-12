@@ -1,15 +1,31 @@
 .membersPanel {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 2;
+  flex-shrink: 0;
+  align-self: stretch;
+  width: 0;
+  overflow: hidden;
+  background: var(--bg-sidebar);
+  border-left: 1px solid transparent;
+  transition:
+    width 0.22s ease,
+    border-color 0.22s ease;
+}
+
+.open {
+  width: 300px;
+  border-left-color: var(--border);
+}
+
+.closed {
+  width: 0;
+  pointer-events: none;
+}
+
+.panelInner {
   display: flex;
   flex-direction: column;
-  width: min(300px, 100%);
-  background: var(--bg-sidebar);
-  border-left: 1px solid var(--border);
-  box-shadow: -8px 0 24px color-mix(in srgb, var(--bg-primary) 60%, transparent);
+  width: 300px;
+  height: 100%;
+  min-height: 0;
 }
 
 .header {

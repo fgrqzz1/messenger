@@ -1,10 +1,19 @@
 .chatWindow {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   flex: 1;
   min-width: 0;
   height: 100%;
   background: var(--bg-primary);
+  overflow: hidden;
+}
+
+.chatMain {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
 }
 
 .header {
@@ -112,7 +121,6 @@
 }
 
 .feedArea {
-  position: relative;
   flex: 1;
   min-height: 0;
   display: flex;
@@ -237,11 +245,17 @@
   max-height: 120px;
   padding: 10px 14px;
   resize: none;
+  overflow-y: auto;
+  scrollbar-width: none;
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   color: var(--text-primary);
   line-height: 1.45;
+}
+
+.textarea::-webkit-scrollbar {
+  display: none;
 }
 
 .textarea::placeholder {
