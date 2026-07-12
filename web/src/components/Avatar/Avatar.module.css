@@ -12,19 +12,19 @@
 }
 
 .sm {
-  width: 36px;
-  height: 36px;
-  font-size: 12px;
+  width: 42px;
+  height: 42px;
+  font-size: 13px;
 }
 
 .md {
-  width: 40px;
-  height: 40px;
-  font-size: 14px;
+  width: 48px;
+  height: 48px;
+  font-size: 15px;
 }
 
 .lg {
-  width: 72px;
-  height: 72px;
-  font-size: 26px;
+  width: 84px;
+  height: 84px;
+  font-size: 30px;
 }

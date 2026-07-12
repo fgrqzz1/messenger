@@ -21,7 +21,7 @@ body,
 
 body {
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: var(--font-size-base);
   font-weight: 400;
   line-height: 1.45;
   color: var(--text-primary);
@@ -53,6 +53,22 @@ textarea {
 
 a {
   color: var(--accent);
+}
+
+/*
+ * Shared bottom strip: Sidebar footer + ChatWindow composer.
+ * Only place that defines chrome bar border/bg/height/padding.
+ */
+.chromeBar {
+  box-sizing: border-box;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  min-height: var(--chrome-bar-min-height);
+  height: var(--chrome-bar-min-height);
+  padding: var(--chrome-bar-padding-block) var(--chrome-bar-padding-inline);
+  background: var(--chrome-bar-bg);
+  border-top: var(--chrome-bar-border-top);
 }
 
 @keyframes shimmer {

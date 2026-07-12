@@ -4,14 +4,14 @@
   justify-content: center;
   min-height: 100%;
   background: transparent;
-  padding: 24px;
+  padding: var(--space-6);
   overflow-y: auto;
 }
 
 .card {
   width: 100%;
-  max-width: 440px;
-  padding: 28px 32px 32px;
+  max-width: 460px;
+  padding: var(--space-6) var(--space-8) var(--space-8);
   background: var(--bg-sidebar);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -19,10 +19,10 @@
 
 .backBtn {
   display: inline-block;
-  margin: 0 0 20px;
+  margin: 0 0 var(--space-5);
   padding: 0;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: var(--font-size-2xs);
   color: var(--text-secondary);
   background: transparent;
   border: none;
@@ -34,15 +34,15 @@
 
 .hint {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--font-size-base);
   color: var(--text-secondary);
 }
 
 .identity {
   display: flex;
   align-items: flex-start;
-  gap: 16px;
-  margin-bottom: 28px;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
 }
 
 .identityText {
@@ -50,8 +50,8 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding-top: 4px;
+  gap: var(--space-2);
+  padding-top: var(--space-1);
 }
 
 .loginBtn {
@@ -67,7 +67,7 @@
 
 .login {
   font-family: var(--font-heading);
-  font-size: 22px;
+  font-size: var(--font-size-xl);
   font-weight: 700;
   color: var(--text-primary);
   overflow: hidden;
@@ -77,7 +77,7 @@
 
 .loginHint {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--font-size-2xs);
   color: var(--text-secondary);
 }
 
@@ -92,35 +92,35 @@
 .loginEdit {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
   width: 100%;
 }
 
 .loginEditActions {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
   flex-wrap: wrap;
 }
 
 .meta {
   margin: 0;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: var(--font-size-2xs);
   color: var(--text-secondary);
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding-top: 8px;
+  gap: var(--space-4);
+  padding-top: var(--space-2);
   border-top: 1px solid var(--border);
 }
 
 .sectionTitle {
-  margin: 8px 0 0;
+  margin: var(--space-2) 0 0;
   font-family: var(--font-heading);
-  font-size: 15px;
+  font-size: var(--font-size-md);
   font-weight: 600;
   color: var(--text-primary);
 }
@@ -128,18 +128,19 @@
 .field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-2);
 }
 
 .label {
   font-family: var(--font-heading);
-  font-size: 13px;
+  font-size: var(--label-font-size);
   font-weight: 600;
   color: var(--text-secondary);
 }
 
 .input {
-  padding: 10px 12px;
+  padding: var(--control-padding-y) var(--control-padding-x);
+  font-size: var(--font-size-base);
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -158,20 +159,20 @@
 .fieldError,
 .error {
   margin: 0;
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: #e05c5c;
 }
 
 .success {
   margin: 0;
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--online);
 }
 
 .primaryBtn {
-  padding: 10px 14px;
+  padding: var(--btn-padding-y) var(--btn-padding-x);
   font-family: var(--font-heading);
-  font-size: 13px;
+  font-size: var(--btn-font-size);
   font-weight: 600;
   color: var(--text-primary);
   background: var(--accent);
@@ -189,9 +190,9 @@
 }
 
 .ghostBtn {
-  padding: 10px 14px;
+  padding: var(--btn-padding-y) var(--btn-padding-x);
   font-family: var(--font-heading);
-  font-size: 13px;
+  font-size: var(--btn-font-size);
   font-weight: 600;
   color: var(--text-secondary);
   background: var(--bg-elevated);
@@ -206,10 +207,10 @@
 .logoutBtn {
   display: block;
   width: 100%;
-  margin-top: 24px;
-  padding: 11px 16px;
+  margin-top: var(--space-6);
+  padding: var(--btn-padding-y) var(--btn-padding-x);
   font-family: var(--font-heading);
-  font-size: 14px;
+  font-size: var(--btn-font-size);
   font-weight: 600;
   color: #e05c5c;
   background: transparent;

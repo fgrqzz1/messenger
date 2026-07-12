@@ -51,6 +51,7 @@ func (m *mockUserRepo) UpdatePasswordHash(ctx context.Context, userID int64, pas
 type mockChatRepo struct {
 	createDirectFn     func(ctx context.Context, userAID, userBID int64) (*domain.Chat, error)
 	createGroupFn      func(ctx context.Context, title string, createdBy int64) (*domain.Chat, error)
+	updateChatTitleFn  func(ctx context.Context, chatID int64, title string) (*domain.Chat, error)
 	getByIDFn          func(ctx context.Context, id int64) (*domain.Chat, error)
 	getDirectByUsersFn func(ctx context.Context, userAID, userBID int64) (*domain.Chat, error)
 	listByUserFn       func(ctx context.Context, userID int64) ([]domain.ChatListItem, error)
@@ -62,6 +63,13 @@ func (m *mockChatRepo) CreateDirect(ctx context.Context, userAID, userBID int64)
 
 func (m *mockChatRepo) CreateGroup(ctx context.Context, title string, createdBy int64) (*domain.Chat, error) {
 	return m.createGroupFn(ctx, title, createdBy)
+}
+
+func (m *mockChatRepo) UpdateChatTitle(ctx context.Context, chatID int64, title string) (*domain.Chat, error) {
+	if m.updateChatTitleFn != nil {
+		return m.updateChatTitleFn(ctx, chatID, title)
+	}
+	return nil, nil
 }
 
 func (m *mockChatRepo) GetByID(ctx context.Context, id int64) (*domain.Chat, error) {
@@ -156,14 +164,22 @@ func (m *mockReadStateRepo) IsReadByAll(ctx context.Context, chatID, messageID, 
 }
 
 type mockRealtimeNotifier struct {
-	notifyReadFn func(ctx context.Context, chatID, userID, lastReadMessageID int64)
-	calls        []notifyReadCall
+	notifyReadFn        func(ctx context.Context, chatID, userID, lastReadMessageID int64)
+	notifyChatUpdatedFn func(ctx context.Context, chatID, actorUserID int64, title string)
+	calls               []notifyReadCall
+	chatUpdatedCalls    []notifyChatUpdatedCall
 }
 
 type notifyReadCall struct {
 	chatID            int64
 	userID            int64
 	lastReadMessageID int64
+}
+
+type notifyChatUpdatedCall struct {
+	chatID      int64
+	actorUserID int64
+	title       string
 }
 
 func (m *mockRealtimeNotifier) NotifyRead(ctx context.Context, chatID, userID, lastReadMessageID int64) {
@@ -174,5 +190,16 @@ func (m *mockRealtimeNotifier) NotifyRead(ctx context.Context, chatID, userID, l
 	})
 	if m.notifyReadFn != nil {
 		m.notifyReadFn(ctx, chatID, userID, lastReadMessageID)
+	}
+}
+
+func (m *mockRealtimeNotifier) NotifyChatUpdated(ctx context.Context, chatID, actorUserID int64, title string) {
+	m.chatUpdatedCalls = append(m.chatUpdatedCalls, notifyChatUpdatedCall{
+		chatID:      chatID,
+		actorUserID: actorUserID,
+		title:       title,
+	})
+	if m.notifyChatUpdatedFn != nil {
+		m.notifyChatUpdatedFn(ctx, chatID, actorUserID, title)
 	}
 }

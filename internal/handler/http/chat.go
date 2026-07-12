@@ -103,6 +103,36 @@ func (h *Handler) CreateChat(w http.ResponseWriter, r *http.Request) {
 	h.writeJSON(w, http.StatusCreated, toChatResponse(chat))
 }
 
+type updateChatRequest struct {
+	Title string `json:"title"`
+}
+
+func (h *Handler) UpdateChat(w http.ResponseWriter, r *http.Request) {
+	callerID, ok := h.callerID(r)
+	if !ok {
+		writeError(w, domain.ErrUnauthorized)
+		return
+	}
+
+	chatID, ok := parsePathInt64(w, r, "id")
+	if !ok {
+		return
+	}
+
+	var req updateChatRequest
+	if !h.decodeJSON(w, r, &req) {
+		return
+	}
+
+	chat, err := h.svc.UpdateChatTitle(r.Context(), callerID, chatID, req.Title)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+
+	h.writeJSON(w, http.StatusOK, toChatResponse(chat))
+}
+
 func toChatResponse(chat *domain.Chat) chatResponse {
 	return chatResponse{
 		ID:        chat.ID,

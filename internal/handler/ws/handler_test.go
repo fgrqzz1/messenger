@@ -53,6 +53,9 @@ func (m *mockChatRepo) CreateDirect(context.Context, int64, int64) (*domain.Chat
 func (m *mockChatRepo) CreateGroup(context.Context, string, int64) (*domain.Chat, error) {
 	return nil, nil
 }
+func (m *mockChatRepo) UpdateChatTitle(context.Context, int64, string) (*domain.Chat, error) {
+	return nil, nil
+}
 func (m *mockChatRepo) GetByID(context.Context, int64) (*domain.Chat, error) { return nil, nil }
 func (m *mockChatRepo) GetDirectByUsers(context.Context, int64, int64) (*domain.Chat, error) {
 	return nil, nil

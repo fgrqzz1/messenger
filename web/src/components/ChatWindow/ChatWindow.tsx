@@ -262,7 +262,7 @@ export function ChatWindow({ chatId, chatTitle, chatType, avatarUserId }: ChatWi
           </>
         )}
 
-        <div className={styles.inputArea}>
+        <div className={`chromeBar ${styles.inputArea}`}>
           <textarea
             ref={textareaRef}
             className={styles.textarea}

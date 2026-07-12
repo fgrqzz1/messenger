@@ -16,6 +16,7 @@ type UserRepository interface {
 type ChatRepository interface {
 	CreateDirect(ctx context.Context, userAID, userBID int64) (*Chat, error)
 	CreateGroup(ctx context.Context, title string, createdBy int64) (*Chat, error)
+	UpdateChatTitle(ctx context.Context, chatID int64, title string) (*Chat, error)
 	GetByID(ctx context.Context, id int64) (*Chat, error)
 	GetDirectByUsers(ctx context.Context, userAID, userBID int64) (*Chat, error)
 	ListByUser(ctx context.Context, userID int64) ([]ChatListItem, error)

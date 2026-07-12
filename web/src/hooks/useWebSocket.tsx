@@ -13,6 +13,7 @@ import {
   MessengerWebSocket,
   type OutgoingMessage,
   type WsAckFrame,
+  type WsChatUpdatedFrame,
   type WsNewMessageFrame,
   type WsReadFrame,
   type WsStatus,
@@ -54,6 +55,7 @@ type WebSocketProviderProps = {
     createdAt: string,
     lastMessageId?: number,
   ) => boolean
+  setChatTitle: (chatId: number, title: string) => void
   advanceMyReadCursor: (chatId: number, messageId: number) => void
   ensureChatFromMessage: (chatId: number) => Promise<void>
 }
@@ -61,6 +63,7 @@ type WebSocketProviderProps = {
 export function WebSocketProvider({
   children,
   updateChatPreview,
+  setChatTitle,
   advanceMyReadCursor,
   ensureChatFromMessage,
 }: WebSocketProviderProps) {
@@ -74,11 +77,13 @@ export function WebSocketProvider({
   >(null)
   const activeChatIdRef = useRef(activeChatId)
   const updateChatPreviewRef = useRef(updateChatPreview)
+  const setChatTitleRef = useRef(setChatTitle)
   const advanceMyReadCursorRef = useRef(advanceMyReadCursor)
   const ensureChatFromMessageRef = useRef(ensureChatFromMessage)
 
   activeChatIdRef.current = activeChatId
   updateChatPreviewRef.current = updateChatPreview
+  setChatTitleRef.current = setChatTitle
   advanceMyReadCursorRef.current = advanceMyReadCursor
   ensureChatFromMessageRef.current = ensureChatFromMessage
 
@@ -171,6 +176,9 @@ export function WebSocketProvider({
           return
         }
         readHandlerRef.current?.(frame.user_id, frame.last_read_message_id)
+      },
+      onChatUpdated: (frame: WsChatUpdatedFrame) => {
+        setChatTitleRef.current(frame.chat_id, frame.title)
       },
     })
 

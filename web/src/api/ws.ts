@@ -5,6 +5,7 @@ export const WS_FRAME_ACK = 'ack'
 export const WS_FRAME_NEW_MESSAGE = 'new_message'
 export const WS_FRAME_SEND_MESSAGE = 'send_message'
 export const WS_FRAME_READ = 'read'
+export const WS_FRAME_CHAT_UPDATED = 'chat_updated'
 
 export type WsStatus = 'online' | 'reconnecting'
 
@@ -27,6 +28,12 @@ export type WsReadFrame = {
   last_read_message_id: number
 }
 
+export type WsChatUpdatedFrame = {
+  type: typeof WS_FRAME_CHAT_UPDATED
+  chat_id: number
+  title: string
+}
+
 export type OutgoingMessage = {
   chatId: number
   clientMsgId: string
@@ -38,6 +45,7 @@ type WsHandlers = {
   onAck?: (frame: WsAckFrame, chatId?: number) => void
   onNewMessage?: (frame: WsNewMessageFrame) => void
   onRead?: (frame: WsReadFrame) => void
+  onChatUpdated?: (frame: WsChatUpdatedFrame) => void
 }
 
 const INITIAL_BACKOFF_MS = 1_000
@@ -83,6 +91,16 @@ function isReadFrame(value: unknown): value is WsReadFrame {
     typeof (value as WsReadFrame).chat_id === 'number' &&
     typeof (value as WsReadFrame).user_id === 'number' &&
     typeof (value as WsReadFrame).last_read_message_id === 'number'
+  )
+}
+
+function isChatUpdatedFrame(value: unknown): value is WsChatUpdatedFrame {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    (value as WsChatUpdatedFrame).type === WS_FRAME_CHAT_UPDATED &&
+    typeof (value as WsChatUpdatedFrame).chat_id === 'number' &&
+    typeof (value as WsChatUpdatedFrame).title === 'string'
   )
 }
 
@@ -175,6 +193,11 @@ export class MessengerWebSocket {
 
       if (isReadFrame(data)) {
         this.handlers.onRead?.(data)
+        return
+      }
+
+      if (isChatUpdatedFrame(data)) {
+        this.handlers.onChatUpdated?.(data)
       }
     }
 

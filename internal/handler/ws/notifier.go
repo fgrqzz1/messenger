@@ -44,4 +44,25 @@ func (n *HubReadNotifier) NotifyRead(ctx context.Context, chatID, userID, lastRe
 	n.hub.BroadcastRead(chatID, userID, payload, memberIDs)
 }
 
+func (n *HubReadNotifier) NotifyChatUpdated(ctx context.Context, chatID, actorUserID int64, title string) {
+	memberIDs, err := n.members.ListUserIDs(ctx, chatID)
+	if err != nil {
+		n.logger.Warn("chat_updated broadcast skipped", "err", err, "chat_id", chatID)
+		return
+	}
+
+	frame := chatUpdatedFrame{
+		Type:   FrameTypeChatUpdated,
+		ChatID: chatID,
+		Title:  title,
+	}
+	payload, err := json.Marshal(frame)
+	if err != nil {
+		n.logger.Warn("chat_updated broadcast marshal failed", "err", err, "chat_id", chatID)
+		return
+	}
+
+	n.hub.BroadcastChatUpdated(chatID, actorUserID, payload, memberIDs)
+}
+
 var _ domain.RealtimeNotifier = (*HubReadNotifier)(nil)

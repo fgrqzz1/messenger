@@ -105,3 +105,36 @@ func TestChatRepository_GetDirectByUsers(t *testing.T) {
 		t.Fatalf("duplicate CreateDirect error = %v, want ErrConflict", err)
 	}
 }
+
+func TestChatRepository_UpdateChatTitle(t *testing.T) {
+	db := newTestDB(t)
+	chatRepo := NewChatRepository(db)
+	ctx := context.Background()
+
+	aliceID := createTestUser(t, db, "alice-title")
+	group, err := chatRepo.CreateGroup(ctx, "old", aliceID)
+	if err != nil {
+		t.Fatalf("CreateGroup: %v", err)
+	}
+
+	updated, err := chatRepo.UpdateChatTitle(ctx, group.ID, "new title")
+	if err != nil {
+		t.Fatalf("UpdateChatTitle: %v", err)
+	}
+	if updated.Title == nil || *updated.Title != "new title" {
+		t.Fatalf("title = %+v, want new title", updated.Title)
+	}
+
+	got, err := chatRepo.GetByID(ctx, group.ID)
+	if err != nil {
+		t.Fatalf("GetByID: %v", err)
+	}
+	if got.Title == nil || *got.Title != "new title" {
+		t.Fatalf("persisted title = %+v, want new title", got.Title)
+	}
+
+	_, err = chatRepo.UpdateChatTitle(ctx, 999999, "x")
+	if !errors.Is(err, domain.ErrNotFound) {
+		t.Fatalf("missing chat error = %v, want ErrNotFound", err)
+	}
+}

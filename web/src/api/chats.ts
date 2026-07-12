@@ -19,6 +19,13 @@ export function createGroupChat(title: string): Promise<Chat> {
   })
 }
 
+export function updateChatTitle(chatId: number, title: string): Promise<Chat> {
+  return apiClient<Chat>(`/chats/${chatId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ title }),
+  })
+}
+
 export function getChatDisplayName(
   chat: ChatListItem,
   peerNames: Record<number, string> = {},

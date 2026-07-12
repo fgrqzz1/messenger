@@ -32,6 +32,8 @@ type ChatsContextValue = {
     createdAt: string,
     lastMessageId?: number,
   ) => boolean
+  /** Локально обновляет title группового чата (PATCH / WS chat_updated). */
+  setChatTitle: (chatId: number, title: string) => void
   /** Поднимает my_last_read_message_id (GREATEST), чтобы снять unread в сайдбаре. */
   advanceMyReadCursor: (chatId: number, messageId: number) => void
   /** Сразу вставляет ответ POST /chats в начало списка (без ожидания WS/рефетча). */
@@ -245,6 +247,12 @@ export function ChatsProvider({ children }: { children: ReactNode }) {
     [],
   )
 
+  const setChatTitle = useCallback((chatId: number, title: string) => {
+    setChats((prev) =>
+      prev.map((chat) => (chat.id === chatId ? { ...chat, title } : chat)),
+    )
+  }, [])
+
   const advanceMyReadCursor = useCallback((chatId: number, messageId: number) => {
     if (messageId <= 0) {
       return
@@ -313,6 +321,7 @@ export function ChatsProvider({ children }: { children: ReactNode }) {
       loading,
       error,
       updateChatPreview,
+      setChatTitle,
       advanceMyReadCursor,
       upsertCreatedChat,
       ensureChatFromMessage,
@@ -327,6 +336,7 @@ export function ChatsProvider({ children }: { children: ReactNode }) {
       peerNames,
       peerUserIds,
       reloadChats,
+      setChatTitle,
       updateChatPreview,
       upsertCreatedChat,
     ],

@@ -276,6 +276,94 @@ func TestRemoveMemberNotFound(t *testing.T) {
 	assertErrorCode(t, data, "not_found")
 }
 
+func TestUpdateChatTitleHappyPath(t *testing.T) {
+	t.Parallel()
+	env := newTestEnv(t)
+
+	currentTitle := "old"
+	env.chats.getByIDFn = func(_ context.Context, id int64) (*domain.Chat, error) {
+		return &domain.Chat{ID: id, Type: domain.ChatTypeGroup, Title: &currentTitle, CreatedAt: time.Now()}, nil
+	}
+	env.members.getFn = func(_ context.Context, chatID, userID int64) (*domain.ChatMember, error) {
+		return &domain.ChatMember{ChatID: chatID, UserID: userID, Role: domain.RoleAdmin}, nil
+	}
+	env.chats.updateChatTitleFn = func(_ context.Context, chatID int64, title string) (*domain.Chat, error) {
+		currentTitle = title
+		return &domain.Chat{ID: chatID, Type: domain.ChatTypeGroup, Title: &currentTitle, CreatedAt: time.Now()}, nil
+	}
+	env.chats.listByUserFn = func(_ context.Context, _ int64) ([]domain.ChatListItem, error) {
+		title := currentTitle
+		return []domain.ChatListItem{{
+			ID:    1,
+			Type:  domain.ChatTypeGroup,
+			Title: &title,
+		}}, nil
+	}
+
+	token := env.accessToken(t, 1)
+	resp, data := env.do(http.MethodPatch, "/chats/1", map[string]string{"title": "новое название"}, token)
+	assertStatus(t, resp, http.StatusOK)
+
+	var patched struct {
+		Title *string `json:"title"`
+	}
+	if err := json.Unmarshal(data, &patched); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if patched.Title == nil || *patched.Title != "новое название" {
+		t.Fatalf("title = %+v, want новое название", patched.Title)
+	}
+
+	resp, data = env.do(http.MethodGet, "/chats", nil, token)
+	assertStatus(t, resp, http.StatusOK)
+
+	var list []struct {
+		ID    int64   `json:"id"`
+		Title *string `json:"title"`
+	}
+	if err := json.Unmarshal(data, &list); err != nil {
+		t.Fatalf("unmarshal list: %v", err)
+	}
+	if len(list) != 1 || list[0].Title == nil || *list[0].Title != "новое название" {
+		t.Fatalf("GET /chats = %+v, want updated title", list)
+	}
+}
+
+func TestUpdateChatTitleForbidden(t *testing.T) {
+	t.Parallel()
+	env := newTestEnv(t)
+	env.chats.getByIDFn = func(_ context.Context, _ int64) (*domain.Chat, error) {
+		return &domain.Chat{ID: 1, Type: domain.ChatTypeGroup}, nil
+	}
+	env.members.getFn = func(_ context.Context, _, _ int64) (*domain.ChatMember, error) {
+		return &domain.ChatMember{Role: domain.RoleMember}, nil
+	}
+	env.chats.updateChatTitleFn = func(context.Context, int64, string) (*domain.Chat, error) {
+		t.Fatal("UpdateChatTitle must not be called for non-admin")
+		return nil, nil
+	}
+
+	resp, data := env.do(http.MethodPatch, "/chats/1", map[string]string{"title": "x"}, env.accessToken(t, 1))
+	assertStatus(t, resp, http.StatusForbidden)
+	assertErrorCode(t, data, "forbidden")
+}
+
+func TestUpdateChatTitleDirectForbidden(t *testing.T) {
+	t.Parallel()
+	env := newTestEnv(t)
+	env.chats.getByIDFn = func(_ context.Context, _ int64) (*domain.Chat, error) {
+		return &domain.Chat{ID: 1, Type: domain.ChatTypeDirect}, nil
+	}
+	env.chats.updateChatTitleFn = func(context.Context, int64, string) (*domain.Chat, error) {
+		t.Fatal("UpdateChatTitle must not be called for direct chat")
+		return nil, nil
+	}
+
+	resp, data := env.do(http.MethodPatch, "/chats/1", map[string]string{"title": "x"}, env.accessToken(t, 1))
+	assertStatus(t, resp, http.StatusBadRequest)
+	assertErrorCode(t, data, "validation_error")
+}
+
 func TestSearchHappyPath(t *testing.T) {
 	t.Parallel()
 	env := newTestEnv(t)

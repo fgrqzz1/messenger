@@ -20,12 +20,12 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 16px;
+  padding: 14px 16px;
 }
 
 .avatar {
-  width: 36px;
-  height: 36px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -81,7 +81,7 @@
 }
 
 .bubble {
-  height: 40px;
+  height: 46px;
   border-radius: var(--radius-md);
 }
 

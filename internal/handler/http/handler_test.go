@@ -159,6 +159,7 @@ func (m *mockUserRepo) UpdatePasswordHash(ctx context.Context, userID int64, pas
 type mockChatRepo struct {
 	createDirectFn     func(ctx context.Context, userAID, userBID int64) (*domain.Chat, error)
 	createGroupFn      func(ctx context.Context, title string, createdBy int64) (*domain.Chat, error)
+	updateChatTitleFn  func(ctx context.Context, chatID int64, title string) (*domain.Chat, error)
 	getByIDFn          func(ctx context.Context, id int64) (*domain.Chat, error)
 	getDirectByUsersFn func(ctx context.Context, userAID, userBID int64) (*domain.Chat, error)
 	listByUserFn       func(ctx context.Context, userID int64) ([]domain.ChatListItem, error)
@@ -169,6 +170,12 @@ func (m *mockChatRepo) CreateDirect(ctx context.Context, userAID, userBID int64)
 }
 func (m *mockChatRepo) CreateGroup(ctx context.Context, title string, createdBy int64) (*domain.Chat, error) {
 	return m.createGroupFn(ctx, title, createdBy)
+}
+func (m *mockChatRepo) UpdateChatTitle(ctx context.Context, chatID int64, title string) (*domain.Chat, error) {
+	if m.updateChatTitleFn != nil {
+		return m.updateChatTitleFn(ctx, chatID, title)
+	}
+	return nil, nil
 }
 func (m *mockChatRepo) GetByID(ctx context.Context, id int64) (*domain.Chat, error) {
 	return m.getByIDFn(ctx, id)

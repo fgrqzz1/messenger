@@ -7,15 +7,36 @@
   min-width: var(--sidebar-width);
   height: 100%;
   background: var(--bg-sidebar);
+  /* No full-height border-right — would cut the shared chrome strip */
+  border-right: none;
+}
+
+.sidebarUpper {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   border-right: 1px solid var(--border);
 }
 
 .header {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 14px;
-  padding: 16px;
-  border-bottom: 1px solid var(--border);
+  padding: 16px 16px 18px;
+  border-bottom: none;
+}
+
+.header::after {
+  content: '';
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 0;
+  height: 1px;
+  background: var(--header-accent-glow);
+  pointer-events: none;
 }
 
 .brand {
@@ -25,15 +46,15 @@
 }
 
 .brandIcon {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   color: var(--accent);
   flex-shrink: 0;
 }
 
 .brandName {
   font-family: var(--font-heading);
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--text-primary);
@@ -54,7 +75,7 @@
 .searchIcon {
   position: absolute;
   top: 50%;
-  left: 10px;
+  left: 11px;
   transform: translateY(-50%);
   color: var(--text-secondary);
   pointer-events: none;
@@ -62,7 +83,8 @@
 
 .search {
   width: 100%;
-  padding: 9px 12px 9px 34px;
+  padding: 10px 12px 10px 36px;
+  font-size: 15px;
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -78,8 +100,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 42px;
+  height: 42px;
   color: var(--text-primary);
   background: var(--accent);
   border-radius: var(--radius-sm);
@@ -112,7 +134,6 @@
   overflow: hidden;
 }
 
-/* Soft accent glow at list edges — not full-panel glass */
 .listRegion::before,
 .listRegion::after {
   content: '';
@@ -144,7 +165,7 @@
 
 .stateMessage {
   padding: 16px 20px;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--text-secondary);
 }
 
@@ -157,7 +178,7 @@
   flex-direction: row;
   align-items: center;
   gap: 12px;
-  padding: 12px 16px;
+  padding: 14px 16px;
   cursor: pointer;
   border-left: 3px solid transparent;
   transition: background-color 120ms ease;
@@ -194,7 +215,7 @@
 .chatName {
   margin: 0;
   font-family: var(--font-heading);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text-primary);
   overflow: hidden;
@@ -229,29 +250,38 @@
 .chatTime {
   flex-shrink: 0;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-secondary);
 }
 
 .chatPreview {
   margin: 0;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+/* Layout/spacing only — border/bg/height live in global .chromeBar */
 .footer {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-2xs);
+  color: var(--text-secondary);
+}
+
+.profileCard {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 10px 12px;
-  border-top: 1px solid var(--border);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--text-secondary);
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  padding: 6px 10px;
+  background: color-mix(in srgb, var(--bg-sidebar) 40%, var(--chrome-bar-bg));
+  border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  border-radius: var(--radius-md);
 }
 
 .profileBtn {
@@ -260,17 +290,16 @@
   gap: 10px;
   min-width: 0;
   flex: 1;
-  padding: 4px 6px;
+  padding: 0;
   text-align: left;
   background: transparent;
   border: none;
   border-radius: var(--radius-sm);
   color: var(--text-primary);
-  transition: background-color 120ms ease;
 }
 
-.profileBtn:hover {
-  background: var(--bg-elevated);
+.profileBtn:hover .profileLogin {
+  color: var(--accent);
 }
 
 .profileLogin {
@@ -279,8 +308,9 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   font-family: var(--font-heading);
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   font-weight: 600;
+  transition: color 120ms ease;
 }
 
 .connection {
@@ -288,6 +318,7 @@
   align-items: center;
   gap: 6px;
   flex-shrink: 0;
+  padding-right: 2px;
 }
 
 .statusDot {

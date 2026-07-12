@@ -102,6 +102,33 @@ func (r *ChatRepository) CreateGroup(ctx context.Context, title string, createdB
 	return &chat, nil
 }
 
+func (r *ChatRepository) UpdateChatTitle(ctx context.Context, chatID int64, title string) (*domain.Chat, error) {
+	const q = `
+		UPDATE chats
+		SET title = $2
+		WHERE id = $1
+		RETURNING id, type, title, user_a_id, user_b_id, created_by, created_at
+	`
+
+	var chat domain.Chat
+	var chatType string
+	err := r.db.pool.QueryRow(ctx, q, chatID, title).Scan(
+		&chat.ID,
+		&chatType,
+		&chat.Title,
+		&chat.UserAID,
+		&chat.UserBID,
+		&chat.CreatedBy,
+		&chat.CreatedAt,
+	)
+	if err != nil {
+		return nil, mapError(err)
+	}
+	chat.Type = domain.ChatType(chatType)
+
+	return &chat, nil
+}
+
 func (r *ChatRepository) GetDirectByUsers(ctx context.Context, userAID, userBID int64) (*domain.Chat, error) {
 	const q = `
 		SELECT id, type, title, user_a_id, user_b_id, created_by, created_at

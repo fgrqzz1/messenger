@@ -52,6 +52,10 @@ func (h *Hub) BroadcastRead(chatID int64, readerID int64, payload []byte, recipi
 	h.broadcastExcept(readerID, payload, recipientIDs)
 }
 
+func (h *Hub) BroadcastChatUpdated(chatID int64, actorUserID int64, payload []byte, recipientIDs []int64) {
+	h.broadcastExcept(actorUserID, payload, recipientIDs)
+}
+
 func (h *Hub) broadcastExcept(excludeUserID int64, payload []byte, recipientIDs []int64) {
 	h.mu.RLock()
 	defer h.mu.RUnlock()
