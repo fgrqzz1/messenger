@@ -6,9 +6,15 @@ import { useSidebar } from '../../context/SidebarContext'
 import { useChats } from '../../hooks/useChats'
 import { useMemberNames } from '../../hooks/useMemberNames'
 import { useMessages } from '../../hooks/useMessages'
+import { useReadState } from '../../hooks/useReadState'
 import { useWebSocket } from '../../hooks/useWebSocket'
 import { MembersPanel } from '../MembersPanel/MembersPanel'
 import { SearchPanel } from '../SearchPanel/SearchPanel'
+import {
+  MessageStatus,
+  toMessageStatusKind,
+} from '../MessageStatus/MessageStatus'
+import { resolveOwnDeliveryStatus } from '../../utils/deliveryStatus'
 import { formatMessageTime } from '../../utils/formatMessageTime'
 import styles from './ChatWindow.module.css'
 
@@ -40,7 +46,8 @@ export function ChatWindow({ chatId, chatTitle, chatType }: ChatWindowProps) {
   const { currentUser } = useAuth()
   const { membersPanelRequest } = useActiveChat()
   const { isNarrow, toggleSidebar } = useSidebar()
-  const { sendMessage, registerChatHandlers } = useWebSocket()
+  const { advanceMyReadCursor } = useChats()
+  const { sendMessage, registerChatHandlers, registerReadHandler } = useWebSocket()
   const {
     messages,
     loading,
@@ -52,6 +59,14 @@ export function ChatWindow({ chatId, chatTitle, chatType }: ChatWindowProps) {
     scrollToMessage,
     highlightedMessageId,
   } = useMessages(chatId, registerChatHandlers)
+  const { readCursors } = useReadState({
+    chatId,
+    messages,
+    loading,
+    currentUserId: currentUser?.id ?? null,
+    advanceMyReadCursor,
+    registerReadHandler,
+  })
   const memberNames = useMemberNames(chatId, chatType, currentUser)
   const [draft, setDraft] = useState('')
   const [membersOpen, setMembersOpen] = useState(false)
@@ -86,10 +101,7 @@ export function ChatWindow({ chatId, chatTitle, chatType }: ChatWindowProps) {
 
   const handleSearchSelect = useCallback(
     async (messageId: number) => {
-      const ok = await scrollToMessage(messageId)
-      if (!ok) {
-        // scrollToMessage sets error in useMessages when load fails
-      }
+      await scrollToMessage(messageId)
     },
     [scrollToMessage],
   )
@@ -210,7 +222,11 @@ export function ChatWindow({ chatId, chatTitle, chatType }: ChatWindowProps) {
                   currentUser?.id ?? null,
                   memberNames,
                 )
-                const showDelivery = isOwn && msg.delivery_status
+                const deliveryStatus =
+                  isOwn && currentUser
+                    ? resolveOwnDeliveryStatus(msg, currentUser.id, readCursors)
+                    : null
+                const showDelivery = isOwn && (msg.delivery_status != null || msg.id > 0)
                 const isHighlighted = msg.id > 0 && msg.id === highlightedMessageId
 
                 return (
@@ -219,34 +235,25 @@ export function ChatWindow({ chatId, chatTitle, chatType }: ChatWindowProps) {
                     data-message-id={msg.id > 0 ? msg.id : undefined}
                     className={`${styles.bubbleWrap} ${isOwn ? styles.bubbleWrapOwn : styles.bubbleWrapOther} ${isHighlighted ? styles.bubbleWrapHighlight : ''}`}
                   >
-                  {!isOwn && senderName && (
-                    <span className={styles.senderName}>{senderName}</span>
-                  )}
-                  <div
-                    className={`${styles.bubble} ${isOwn ? styles.bubbleOwn : styles.bubbleOther}`}
-                  >
-                    {msg.body}
-                  </div>
-                  <div className={styles.meta}>
-                    <span className={styles.timestamp}>
-                      {formatMessageTime(msg.created_at)}
-                    </span>
-                    {showDelivery && (
-                      <span
-                        className={`${styles.delivery} ${msg.delivery_status === 'acked' ? styles.deliveryAck : ''}`}
-                        aria-label={
-                          msg.delivery_status === 'acked'
-                            ? 'Доставлено на сервер'
-                            : 'Ожидает подтверждения'
-                        }
-                      >
-                        {msg.delivery_status === 'acked' ? '◐' : '◌'}
-                      </span>
+                    {!isOwn && senderName && (
+                      <span className={styles.senderName}>{senderName}</span>
                     )}
-                  </div>
-                </li>
-              )
-            })}
+                    <div
+                      className={`${styles.bubble} ${isOwn ? styles.bubbleOwn : styles.bubbleOther}`}
+                    >
+                      {msg.body}
+                    </div>
+                    <div className={styles.meta}>
+                      <span className={styles.timestamp}>
+                        {formatMessageTime(msg.created_at)}
+                      </span>
+                      {showDelivery && deliveryStatus && (
+                        <MessageStatus status={toMessageStatusKind(deliveryStatus)} />
+                      )}
+                    </div>
+                  </li>
+                )
+              })}
             </ul>
 
             <MembersPanel

@@ -23,6 +23,8 @@ func NewMux(svc *service.Service, jwtManager *jwt.Manager) http.Handler {
 	mux.Handle("GET /chats", withAuth(http.HandlerFunc(h.ListChats)))
 	mux.Handle("POST /chats", withAuth(http.HandlerFunc(h.CreateChat)))
 	mux.Handle("GET /chats/{id}/messages", withAuth(http.HandlerFunc(h.ListMessages)))
+	mux.Handle("POST /chats/{id}/read", withAuth(http.HandlerFunc(h.MarkRead)))
+	mux.Handle("GET /chats/{id}/read-state", withAuth(http.HandlerFunc(h.GetReadState)))
 	mux.Handle("GET /chats/{id}/members", withAuth(http.HandlerFunc(h.ListMembers)))
 	mux.Handle("POST /chats/{id}/members", withAuth(http.HandlerFunc(h.AddMember)))
 	mux.Handle("DELETE /chats/{id}/members/{user_id}", withAuth(http.HandlerFunc(h.RemoveMember)))

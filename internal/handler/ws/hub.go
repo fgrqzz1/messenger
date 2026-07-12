@@ -45,11 +45,19 @@ func (h *Hub) Unregister(client *Client) {
 }
 
 func (h *Hub) BroadcastNewMessage(chatID int64, senderID int64, payload []byte, recipientIDs []int64) {
+	h.broadcastExcept(senderID, payload, recipientIDs)
+}
+
+func (h *Hub) BroadcastRead(chatID int64, readerID int64, payload []byte, recipientIDs []int64) {
+	h.broadcastExcept(readerID, payload, recipientIDs)
+}
+
+func (h *Hub) broadcastExcept(excludeUserID int64, payload []byte, recipientIDs []int64) {
 	h.mu.RLock()
 	defer h.mu.RUnlock()
 
 	for _, userID := range recipientIDs {
-		if userID == senderID {
+		if userID == excludeUserID {
 			continue
 		}
 		conns := h.users[userID]

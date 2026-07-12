@@ -158,16 +158,18 @@ func (r *ChatRepository) GetByID(ctx context.Context, id int64) (*domain.Chat, e
 
 func (r *ChatRepository) ListByUser(ctx context.Context, userID int64) ([]domain.ChatListItem, error) {
 	const q = `
-		SELECT c.id, c.type, c.title, lm.body, lm.created_at
+		SELECT c.id, c.type, c.title, lm.id, lm.body, lm.created_at,
+		       COALESCE(crs.last_read_message_id, 0)
 		FROM chats c
 		JOIN chat_members cm ON cm.chat_id = c.id AND cm.user_id = $1
 		LEFT JOIN LATERAL (
-		    SELECT body, created_at
+		    SELECT id, body, created_at
 		    FROM messages m
 		    WHERE m.chat_id = c.id
 		    ORDER BY m.id DESC
 		    LIMIT 1
 		) lm ON true
+		LEFT JOIN chat_read_state crs ON crs.chat_id = c.id AND crs.user_id = $1
 		ORDER BY lm.created_at DESC NULLS LAST
 	`
 
@@ -185,8 +187,10 @@ func (r *ChatRepository) ListByUser(ctx context.Context, userID int64) ([]domain
 			&item.ID,
 			&chatType,
 			&item.Title,
+			&item.LastMessageID,
 			&item.LastMessageBody,
 			&item.LastMessageAt,
+			&item.MyLastReadMessageID,
 		); err != nil {
 			return nil, fmt.Errorf("postgres: scan chat list item: %w", err)
 		}

@@ -37,7 +37,7 @@ func TestService_LoginWrongPassword(t *testing.T) {
 		},
 	}
 
-	svc := New(users, &mockChatRepo{}, &mockMessageRepo{}, &mockMemberRepo{}, testJWTManager())
+	svc := New(users, &mockChatRepo{}, &mockMessageRepo{}, &mockMemberRepo{}, &mockReadStateRepo{}, nil, testJWTManager())
 
 	_, _, err = svc.Login(context.Background(), "alice", "wrong-password")
 	if !errors.Is(err, domain.ErrInvalidCredentials) {
@@ -54,7 +54,7 @@ func TestService_LoginUnknownUser(t *testing.T) {
 		},
 	}
 
-	svc := New(users, &mockChatRepo{}, &mockMessageRepo{}, &mockMemberRepo{}, testJWTManager())
+	svc := New(users, &mockChatRepo{}, &mockMessageRepo{}, &mockMemberRepo{}, &mockReadStateRepo{}, nil, testJWTManager())
 
 	_, _, err := svc.Login(context.Background(), "nobody", "password")
 	if !errors.Is(err, domain.ErrInvalidCredentials) {
@@ -76,7 +76,7 @@ func TestService_LoginSuccess(t *testing.T) {
 		},
 	}
 
-	svc := New(users, &mockChatRepo{}, &mockMessageRepo{}, &mockMemberRepo{}, testJWTManager())
+	svc := New(users, &mockChatRepo{}, &mockMessageRepo{}, &mockMemberRepo{}, &mockReadStateRepo{}, nil, testJWTManager())
 
 	access, refresh, err := svc.Login(context.Background(), "alice", "secret")
 	if err != nil {
@@ -106,7 +106,7 @@ func TestService_RegisterHashesPassword(t *testing.T) {
 		},
 	}
 
-	svc := New(users, &mockChatRepo{}, &mockMessageRepo{}, &mockMemberRepo{}, testJWTManager())
+	svc := New(users, &mockChatRepo{}, &mockMessageRepo{}, &mockMemberRepo{}, &mockReadStateRepo{}, nil, testJWTManager())
 
 	user, err := svc.Register(context.Background(), "alice", "secret")
 	if err != nil {

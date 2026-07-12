@@ -9,12 +9,13 @@ import { Login } from './screens/Login/Login'
 import styles from './App.module.css'
 
 function MessengerLayout() {
-  const { updateChatPreview, ensureChatFromMessage } = useChats()
+  const { updateChatPreview, advanceMyReadCursor, ensureChatFromMessage } = useChats()
   const { isNarrow, sidebarOpen, closeSidebar } = useSidebar()
 
   return (
     <WebSocketProvider
       updateChatPreview={updateChatPreview}
+      advanceMyReadCursor={advanceMyReadCursor}
       ensureChatFromMessage={ensureChatFromMessage}
     >
       <div className={styles.layout}>

@@ -33,24 +33,26 @@ func testJWTManager() *jwt.Manager {
 }
 
 type testEnv struct {
-	users    *mockUserRepo
-	chats    *mockChatRepo
-	messages *mockMessageRepo
-	members  *mockMemberRepo
-	svc      *service.Service
-	server   *httptest.Server
+	users      *mockUserRepo
+	chats      *mockChatRepo
+	messages   *mockMessageRepo
+	members    *mockMemberRepo
+	readStates *mockReadStateRepo
+	svc        *service.Service
+	server     *httptest.Server
 }
 
 func newTestEnv(t *testing.T) *testEnv {
 	t.Helper()
 
 	env := &testEnv{
-		users:    &mockUserRepo{},
-		chats:    &mockChatRepo{},
-		messages: &mockMessageRepo{},
-		members:  &mockMemberRepo{},
+		users:      &mockUserRepo{},
+		chats:      &mockChatRepo{},
+		messages:   &mockMessageRepo{},
+		members:    &mockMemberRepo{},
+		readStates: &mockReadStateRepo{},
 	}
-	env.svc = service.New(env.users, env.chats, env.messages, env.members, testJWTManager())
+	env.svc = service.New(env.users, env.chats, env.messages, env.members, env.readStates, nil, testJWTManager())
 	env.server = httptest.NewServer(httphandler.NewMux(env.svc, testJWTManager()))
 	t.Cleanup(env.server.Close)
 
@@ -208,4 +210,25 @@ func (m *mockMemberRepo) ListByChat(ctx context.Context, chatID int64) ([]domain
 		return m.listByChatFn(ctx, chatID)
 	}
 	return nil, nil
+}
+
+type mockReadStateRepo struct {
+	upsertFn func(ctx context.Context, chatID, userID, messageID int64) (int64, error)
+	getFn    func(ctx context.Context, chatID int64) ([]domain.ChatReadState, error)
+}
+
+func (m *mockReadStateRepo) UpsertReadState(ctx context.Context, chatID, userID, messageID int64) (int64, error) {
+	if m.upsertFn != nil {
+		return m.upsertFn(ctx, chatID, userID, messageID)
+	}
+	return messageID, nil
+}
+func (m *mockReadStateRepo) GetReadState(ctx context.Context, chatID int64) ([]domain.ChatReadState, error) {
+	if m.getFn != nil {
+		return m.getFn(ctx, chatID)
+	}
+	return nil, nil
+}
+func (m *mockReadStateRepo) IsReadByAll(context.Context, int64, int64, int64) (bool, error) {
+	return false, nil
 }

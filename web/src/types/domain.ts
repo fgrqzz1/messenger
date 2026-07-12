@@ -4,8 +4,16 @@ export type ChatListItem = {
   id: number
   type: ChatType
   title?: string | null
+  last_message_id?: number | null
   last_message_body?: string | null
   last_message_at?: string | null
+  /** Курсор прочтения вызывающего; 0 если ещё не отмечал. */
+  my_last_read_message_id?: number
+}
+
+export type ChatReadState = {
+  user_id: number
+  last_read_message_id: number
 }
 
 /** Ответ POST /chats */
@@ -29,7 +37,7 @@ export type TokenPair = {
   refresh_token: string
 }
 
-export type DeliveryStatus = 'pending' | 'acked'
+export type DeliveryStatus = 'pending' | 'acked' | 'read'
 
 export type Message = {
   id: number

@@ -41,6 +41,7 @@ func main() {
 	chatRepo := postgres.NewChatRepository(db)
 	messageRepo := postgres.NewMessageRepository(db)
 	memberRepo := postgres.NewMemberRepository(db)
+	readStateRepo := postgres.NewReadStateRepository(db)
 
 	jwtManager := jwt.NewManager(jwt.Config{
 		AccessSecret:  cfg.JWTAccessSecret,
@@ -49,9 +50,10 @@ func main() {
 		RefreshTTL:    cfg.RefreshTokenTTL,
 	})
 
-	svc := service.New(userRepo, chatRepo, messageRepo, memberRepo, jwtManager)
-
 	hub := wshandler.NewHub()
+	notifier := wshandler.NewHubReadNotifier(hub, memberRepo, logger)
+	svc := service.New(userRepo, chatRepo, messageRepo, memberRepo, readStateRepo, notifier, jwtManager)
+
 	wsHandler := wshandler.NewHandler(svc, jwtManager, hub, wshandler.Config{
 		AllowedOrigins: parseAllowedOrigins(os.Getenv("WS_ALLOWED_ORIGINS")),
 	}, logger)

@@ -38,7 +38,7 @@ func TestService_CreateDirectChatReusesExisting(t *testing.T) {
 		},
 	}
 
-	svc := New(users, chats, &mockMessageRepo{}, &mockMemberRepo{}, testJWTManager())
+	svc := New(users, chats, &mockMessageRepo{}, &mockMemberRepo{}, &mockReadStateRepo{}, nil, testJWTManager())
 
 	chat, err := svc.CreateDirectChat(context.Background(), callerID, otherID)
 	if err != nil {
@@ -52,7 +52,7 @@ func TestService_CreateDirectChatReusesExisting(t *testing.T) {
 func TestService_CreateDirectChatSelfValidation(t *testing.T) {
 	t.Parallel()
 
-	svc := New(&mockUserRepo{}, &mockChatRepo{}, &mockMessageRepo{}, &mockMemberRepo{}, testJWTManager())
+	svc := New(&mockUserRepo{}, &mockChatRepo{}, &mockMessageRepo{}, &mockMemberRepo{}, &mockReadStateRepo{}, nil, testJWTManager())
 
 	_, err := svc.CreateDirectChat(context.Background(), 1, 1)
 	if !errors.Is(err, domain.ErrValidation) {

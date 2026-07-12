@@ -2,9 +2,11 @@ package postgres
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
+	"sort"
 	"testing"
 	"time"
 
@@ -71,14 +73,26 @@ func applyMigrations(ctx context.Context, pool *pgxpool.Pool) error {
 		return os.ErrInvalid
 	}
 
-	migrationPath := filepath.Join(filepath.Dir(filename), "..", "..", "..", "migrations", "000001_init_schema.up.sql")
-	sqlBytes, err := os.ReadFile(migrationPath)
+	migrationsDir := filepath.Join(filepath.Dir(filename), "..", "..", "..", "migrations")
+	files, err := filepath.Glob(filepath.Join(migrationsDir, "*.up.sql"))
 	if err != nil {
 		return err
 	}
+	sort.Strings(files)
+	if len(files) == 0 {
+		return fmt.Errorf("no migrations found in %s", migrationsDir)
+	}
 
-	_, err = pool.Exec(ctx, string(sqlBytes))
-	return err
+	for _, migrationPath := range files {
+		sqlBytes, err := os.ReadFile(migrationPath)
+		if err != nil {
+			return err
+		}
+		if _, err := pool.Exec(ctx, string(sqlBytes)); err != nil {
+			return fmt.Errorf("apply %s: %w", filepath.Base(migrationPath), err)
+		}
+	}
+	return nil
 }
 
 func newTestDB(t *testing.T) *DB {

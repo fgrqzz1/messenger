@@ -223,26 +223,6 @@
   color: var(--text-secondary);
 }
 
-.delivery {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--text-secondary);
-}
-
-.deliveryAck {
-  color: var(--accent);
-  animation: fillAck 180ms ease-out forwards;
-}
-
-@keyframes fillAck {
-  from {
-    color: var(--text-secondary);
-  }
-  to {
-    color: var(--accent);
-  }
-}
-
 .inputArea {
   display: flex;
   align-items: flex-end;

@@ -24,7 +24,14 @@ type ChatsContextValue = {
   loading: boolean
   error: string | null
   /** Обновляет превью; `false`, если чата ещё нет в локальном списке. */
-  updateChatPreview: (chatId: number, body: string, createdAt: string) => boolean
+  updateChatPreview: (
+    chatId: number,
+    body: string,
+    createdAt: string,
+    lastMessageId?: number,
+  ) => boolean
+  /** Поднимает my_last_read_message_id (GREATEST), чтобы снять unread в сайдбаре. */
+  advanceMyReadCursor: (chatId: number, messageId: number) => void
   /** Сразу вставляет ответ POST /chats в начало списка (без ожидания WS/рефетча). */
   upsertCreatedChat: (chat: Chat, peerLogin?: string) => void
   /**
@@ -53,8 +60,10 @@ function chatToListItem(chat: Chat): ChatListItem {
     id: chat.id,
     type: chat.type,
     title: chat.title,
+    last_message_id: null,
     last_message_body: null,
     last_message_at: null,
+    my_last_read_message_id: 0,
   }
 }
 
@@ -181,28 +190,60 @@ export function ChatsProvider({ children }: { children: ReactNode }) {
   }, [currentUser, isAuthenticated])
 
   const updateChatPreview = useCallback(
-    (chatId: number, body: string, createdAt: string): boolean => {
+    (
+      chatId: number,
+      body: string,
+      createdAt: string,
+      lastMessageId?: number,
+    ): boolean => {
       if (!chatsRef.current.some((chat) => chat.id === chatId)) {
         return false
       }
 
       setChats((prev) =>
         sortChatsByLastMessage(
-          prev.map((chat) =>
-            chat.id === chatId
-              ? {
-                  ...chat,
-                  last_message_body: body,
-                  last_message_at: createdAt,
-                }
-              : chat,
-          ),
+          prev.map((chat) => {
+            if (chat.id !== chatId) {
+              return chat
+            }
+
+            const next: ChatListItem = { ...chat }
+            if (body) {
+              next.last_message_body = body
+            }
+            if (createdAt) {
+              next.last_message_at = createdAt
+            }
+            if (lastMessageId != null && lastMessageId > 0) {
+              next.last_message_id = Math.max(chat.last_message_id ?? 0, lastMessageId)
+            }
+            return next
+          }),
         ),
       )
       return true
     },
     [],
   )
+
+  const advanceMyReadCursor = useCallback((chatId: number, messageId: number) => {
+    if (messageId <= 0) {
+      return
+    }
+
+    setChats((prev) =>
+      prev.map((chat) => {
+        if (chat.id !== chatId) {
+          return chat
+        }
+        const current = chat.my_last_read_message_id ?? 0
+        if (messageId <= current) {
+          return chat
+        }
+        return { ...chat, my_last_read_message_id: messageId }
+      }),
+    )
+  }, [])
 
   const upsertCreatedChat = useCallback(
     (chat: Chat, peerLogin?: string) => {
@@ -248,11 +289,13 @@ export function ChatsProvider({ children }: { children: ReactNode }) {
       loading,
       error,
       updateChatPreview,
+      advanceMyReadCursor,
       upsertCreatedChat,
       ensureChatFromMessage,
       reloadChats,
     }),
     [
+      advanceMyReadCursor,
       chats,
       error,
       ensureChatFromMessage,

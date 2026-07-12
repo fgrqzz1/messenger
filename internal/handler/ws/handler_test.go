@@ -88,10 +88,22 @@ func (m *mockMemberRepo) ListByChat(context.Context, int64) ([]domain.ChatMember
 	return nil, nil
 }
 
+type mockReadStateRepo struct{}
+
+func (m *mockReadStateRepo) UpsertReadState(context.Context, int64, int64, int64) (int64, error) {
+	return 0, nil
+}
+func (m *mockReadStateRepo) GetReadState(context.Context, int64) ([]domain.ChatReadState, error) {
+	return nil, nil
+}
+func (m *mockReadStateRepo) IsReadByAll(context.Context, int64, int64, int64) (bool, error) {
+	return false, nil
+}
+
 func newWSTestServer(t *testing.T, messages *mockMessageRepo, members *mockMemberRepo, authTimeout time.Duration) *httptest.Server {
 	t.Helper()
 
-	svc := service.New(&mockUserRepo{}, &mockChatRepo{}, messages, members, testJWTManager())
+	svc := service.New(&mockUserRepo{}, &mockChatRepo{}, messages, members, &mockReadStateRepo{}, nil, testJWTManager())
 	hub := wshandler.NewHub()
 	handler := wshandler.NewHandler(svc, testJWTManager(), hub, wshandler.Config{AuthTimeout: authTimeout}, nil)
 

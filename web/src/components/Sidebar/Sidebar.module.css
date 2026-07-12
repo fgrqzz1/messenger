@@ -102,6 +102,30 @@
   white-space: nowrap;
 }
 
+.chatItemUnread .chatName {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.chatItemUnread .chatPreview {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.chatMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.unreadDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
 .chatTime {
   flex-shrink: 0;
   font-family: var(--font-mono);

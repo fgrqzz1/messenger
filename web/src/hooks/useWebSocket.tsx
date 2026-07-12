@@ -14,6 +14,7 @@ import {
   type OutgoingMessage,
   type WsAckFrame,
   type WsNewMessageFrame,
+  type WsReadFrame,
   type WsStatus,
 } from '../api/ws'
 import { useActiveChat } from '../context/ActiveChatContext'
@@ -32,20 +33,35 @@ type WebSocketContextValue = {
   status: WsStatus
   sendMessage: (chatId: number, body: string) => string | null
   registerChatHandlers: (handlers: ChatMessageHandlers | null) => void
-  updateChatPreview: (chatId: number, body: string, createdAt: string) => boolean
+  registerReadHandler: (
+    handler: ((userId: number, lastReadMessageId: number) => void) | null,
+  ) => void
+  updateChatPreview: (
+    chatId: number,
+    body: string,
+    createdAt: string,
+    lastMessageId?: number,
+  ) => boolean
 }
 
 const WebSocketContext = createContext<WebSocketContextValue | null>(null)
 
 type WebSocketProviderProps = {
   children: ReactNode
-  updateChatPreview: (chatId: number, body: string, createdAt: string) => boolean
+  updateChatPreview: (
+    chatId: number,
+    body: string,
+    createdAt: string,
+    lastMessageId?: number,
+  ) => boolean
+  advanceMyReadCursor: (chatId: number, messageId: number) => void
   ensureChatFromMessage: (chatId: number) => Promise<void>
 }
 
 export function WebSocketProvider({
   children,
   updateChatPreview,
+  advanceMyReadCursor,
   ensureChatFromMessage,
 }: WebSocketProviderProps) {
   const { isAuthenticated, currentUser } = useAuth()
@@ -53,17 +69,29 @@ export function WebSocketProvider({
   const [status, setStatus] = useState<WsStatus>('reconnecting')
   const clientRef = useRef<MessengerWebSocket | null>(null)
   const chatHandlersRef = useRef<ChatMessageHandlers | null>(null)
+  const readHandlerRef = useRef<
+    ((userId: number, lastReadMessageId: number) => void) | null
+  >(null)
   const activeChatIdRef = useRef(activeChatId)
   const updateChatPreviewRef = useRef(updateChatPreview)
+  const advanceMyReadCursorRef = useRef(advanceMyReadCursor)
   const ensureChatFromMessageRef = useRef(ensureChatFromMessage)
 
   activeChatIdRef.current = activeChatId
   updateChatPreviewRef.current = updateChatPreview
+  advanceMyReadCursorRef.current = advanceMyReadCursor
   ensureChatFromMessageRef.current = ensureChatFromMessage
 
   const registerChatHandlers = useCallback((handlers: ChatMessageHandlers | null) => {
     chatHandlersRef.current = handlers
   }, [])
+
+  const registerReadHandler = useCallback(
+    (handler: ((userId: number, lastReadMessageId: number) => void) | null) => {
+      readHandlerRef.current = handler
+    },
+    [],
+  )
 
   const sendMessage = useCallback(
     (chatId: number, body: string): string | null => {
@@ -113,17 +141,23 @@ export function WebSocketProvider({
 
     client.setHandlers({
       onStatusChange: setStatus,
-      onAck: (frame: WsAckFrame) => {
+      onAck: (frame: WsAckFrame, chatId?: number) => {
         chatHandlersRef.current?.markAcked(frame.client_msg_id, frame.server_id)
+        if (chatId != null) {
+          // Собственное сообщение: поднимаем last_message_id и свой курсор,
+          // чтобы сайдбар не помечал чат непрочитанным из‑за своего же сообщения.
+          updateChatPreviewRef.current(chatId, '', '', frame.server_id)
+          advanceMyReadCursorRef.current(chatId, frame.server_id)
+        }
       },
       onNewMessage: (frame: WsNewMessageFrame) => {
         const updated = updateChatPreviewRef.current(
           frame.chat_id,
           frame.message.body,
           frame.message.created_at,
+          frame.message.id,
         )
         if (!updated) {
-          // Чат ещё не в локальном списке (новый direct / добавили в группу + первое сообщение).
           void ensureChatFromMessageRef.current(frame.chat_id)
         }
 
@@ -131,6 +165,12 @@ export function WebSocketProvider({
         if (openChatId === frame.chat_id) {
           chatHandlersRef.current?.addIncomingMessage(frame.message)
         }
+      },
+      onRead: (frame: WsReadFrame) => {
+        if (activeChatIdRef.current !== frame.chat_id) {
+          return
+        }
+        readHandlerRef.current?.(frame.user_id, frame.last_read_message_id)
       },
     })
 
@@ -160,9 +200,10 @@ export function WebSocketProvider({
       status,
       sendMessage,
       registerChatHandlers,
+      registerReadHandler,
       updateChatPreview,
     }),
-    [registerChatHandlers, sendMessage, status, updateChatPreview],
+    [registerChatHandlers, registerReadHandler, sendMessage, status, updateChatPreview],
   )
 
   return (

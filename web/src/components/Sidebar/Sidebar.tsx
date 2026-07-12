@@ -4,6 +4,7 @@ import { useActiveChat } from '../../context/ActiveChatContext'
 import { useSidebar } from '../../context/SidebarContext'
 import { useChats } from '../../hooks/useChats'
 import { useWebSocket } from '../../hooks/useWebSocket'
+import { chatHasUnread } from '../../utils/deliveryStatus'
 import { formatChatTime } from '../../utils/formatChatTime'
 import { CreateChatModal } from '../CreateChatModal/CreateChatModal'
 import styles from './Sidebar.module.css'
@@ -81,28 +82,36 @@ export function Sidebar() {
         )}
         {!loading &&
           !error &&
-          filteredChats.map((chat) => (
-            <li
-              key={chat.id}
-              className={`${styles.chatItem} ${chat.id === activeChatId ? styles.chatItemActive : ''}`}
-              onClick={() => selectChat(chat.id)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') selectChat(chat.id)
-              }}
-              role="button"
-              tabIndex={0}
-            >
-              <div className={styles.chatRow}>
-                <h2 className={styles.chatName}>{getChatDisplayName(chat, peerNames)}</h2>
-                <span className={styles.chatTime}>
-                  {formatChatTime(chat.last_message_at)}
-                </span>
-              </div>
-              <p className={styles.chatPreview}>
-                {chat.last_message_body ?? 'Нет сообщений'}
-              </p>
-            </li>
-          ))}
+          filteredChats.map((chat) => {
+            const unread = chatHasUnread(chat)
+            return (
+              <li
+                key={chat.id}
+                className={`${styles.chatItem} ${chat.id === activeChatId ? styles.chatItemActive : ''} ${unread ? styles.chatItemUnread : ''}`}
+                onClick={() => selectChat(chat.id)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') selectChat(chat.id)
+                }}
+                role="button"
+                tabIndex={0}
+              >
+                <div className={styles.chatRow}>
+                  <h2 className={styles.chatName}>{getChatDisplayName(chat, peerNames)}</h2>
+                  <div className={styles.chatMeta}>
+                    {unread && (
+                      <span className={styles.unreadDot} aria-label="Есть непрочитанные" />
+                    )}
+                    <span className={styles.chatTime}>
+                      {formatChatTime(chat.last_message_at)}
+                    </span>
+                  </div>
+                </div>
+                <p className={styles.chatPreview}>
+                  {chat.last_message_body ?? 'Нет сообщений'}
+                </p>
+              </li>
+            )
+          })}
       </ul>
 
       <footer className={styles.footer}>

@@ -3,9 +3,10 @@ package ws
 import "time"
 
 const (
-	FrameTypeAck        = "ack"
-	FrameTypeNewMessage = "new_message"
+	FrameTypeAck         = "ack"
+	FrameTypeNewMessage  = "new_message"
 	FrameTypeSendMessage = "send_message"
+	FrameTypeRead        = "read"
 )
 
 type authFrame struct {
@@ -29,6 +30,13 @@ type newMessageFrame struct {
 	Type    string         `json:"type"`
 	ChatID  int64          `json:"chat_id"`
 	Message messagePayload `json:"message"`
+}
+
+type readFrame struct {
+	Type              string `json:"type"`
+	ChatID            int64  `json:"chat_id"`
+	UserID            int64  `json:"user_id"`
+	LastReadMessageID int64  `json:"last_read_message_id"`
 }
 
 type messagePayload struct {

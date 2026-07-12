@@ -111,3 +111,52 @@ func (m *mockMemberRepo) ListByChat(ctx context.Context, chatID int64) ([]domain
 	}
 	return nil, nil
 }
+
+type mockReadStateRepo struct {
+	upsertFn      func(ctx context.Context, chatID, userID, messageID int64) (int64, error)
+	getFn         func(ctx context.Context, chatID int64) ([]domain.ChatReadState, error)
+	isReadByAllFn func(ctx context.Context, chatID, messageID, excludeUserID int64) (bool, error)
+}
+
+func (m *mockReadStateRepo) UpsertReadState(ctx context.Context, chatID, userID, messageID int64) (int64, error) {
+	if m.upsertFn != nil {
+		return m.upsertFn(ctx, chatID, userID, messageID)
+	}
+	return messageID, nil
+}
+
+func (m *mockReadStateRepo) GetReadState(ctx context.Context, chatID int64) ([]domain.ChatReadState, error) {
+	if m.getFn != nil {
+		return m.getFn(ctx, chatID)
+	}
+	return nil, nil
+}
+
+func (m *mockReadStateRepo) IsReadByAll(ctx context.Context, chatID, messageID, excludeUserID int64) (bool, error) {
+	if m.isReadByAllFn != nil {
+		return m.isReadByAllFn(ctx, chatID, messageID, excludeUserID)
+	}
+	return false, nil
+}
+
+type mockRealtimeNotifier struct {
+	notifyReadFn func(ctx context.Context, chatID, userID, lastReadMessageID int64)
+	calls        []notifyReadCall
+}
+
+type notifyReadCall struct {
+	chatID            int64
+	userID            int64
+	lastReadMessageID int64
+}
+
+func (m *mockRealtimeNotifier) NotifyRead(ctx context.Context, chatID, userID, lastReadMessageID int64) {
+	m.calls = append(m.calls, notifyReadCall{
+		chatID:            chatID,
+		userID:            userID,
+		lastReadMessageID: lastReadMessageID,
+	})
+	if m.notifyReadFn != nil {
+		m.notifyReadFn(ctx, chatID, userID, lastReadMessageID)
+	}
+}

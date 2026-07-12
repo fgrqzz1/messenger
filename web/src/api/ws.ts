@@ -4,6 +4,7 @@ import type { Message } from '../types/domain'
 export const WS_FRAME_ACK = 'ack'
 export const WS_FRAME_NEW_MESSAGE = 'new_message'
 export const WS_FRAME_SEND_MESSAGE = 'send_message'
+export const WS_FRAME_READ = 'read'
 
 export type WsStatus = 'online' | 'reconnecting'
 
@@ -19,6 +20,13 @@ export type WsNewMessageFrame = {
   message: Message
 }
 
+export type WsReadFrame = {
+  type: typeof WS_FRAME_READ
+  chat_id: number
+  user_id: number
+  last_read_message_id: number
+}
+
 export type OutgoingMessage = {
   chatId: number
   clientMsgId: string
@@ -27,8 +35,9 @@ export type OutgoingMessage = {
 
 type WsHandlers = {
   onStatusChange?: (status: WsStatus) => void
-  onAck?: (frame: WsAckFrame) => void
+  onAck?: (frame: WsAckFrame, chatId?: number) => void
   onNewMessage?: (frame: WsNewMessageFrame) => void
+  onRead?: (frame: WsReadFrame) => void
 }
 
 const INITIAL_BACKOFF_MS = 1_000
@@ -63,6 +72,17 @@ function isNewMessageFrame(value: unknown): value is WsNewMessageFrame {
     typeof (value as WsNewMessageFrame).chat_id === 'number' &&
     typeof (value as WsNewMessageFrame).message === 'object' &&
     (value as WsNewMessageFrame).message !== null
+  )
+}
+
+function isReadFrame(value: unknown): value is WsReadFrame {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    (value as WsReadFrame).type === WS_FRAME_READ &&
+    typeof (value as WsReadFrame).chat_id === 'number' &&
+    typeof (value as WsReadFrame).user_id === 'number' &&
+    typeof (value as WsReadFrame).last_read_message_id === 'number'
   )
 }
 
@@ -140,13 +160,21 @@ export class MessengerWebSocket {
       }
 
       if (isAckFrame(data)) {
+        const pending = this.pendingQueue.find(
+          (item) => item.clientMsgId === data.client_msg_id,
+        )
         this.removeFromQueue(data.client_msg_id)
-        this.handlers.onAck?.(data)
+        this.handlers.onAck?.(data, pending?.chatId)
         return
       }
 
       if (isNewMessageFrame(data)) {
         this.handlers.onNewMessage?.(data)
+        return
+      }
+
+      if (isReadFrame(data)) {
+        this.handlers.onRead?.(data)
       }
     }
 

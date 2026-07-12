@@ -40,7 +40,7 @@ func TestService_SendMessageIdempotentByClientMsgID(t *testing.T) {
 		},
 	}
 
-	svc := New(&mockUserRepo{}, &mockChatRepo{}, messages, members, testJWTManager())
+	svc := New(&mockUserRepo{}, &mockChatRepo{}, messages, members, &mockReadStateRepo{}, nil, testJWTManager())
 
 	first, err := svc.SendMessage(context.Background(), callerID, chatID, clientMsgID, "hello")
 	if err != nil {
@@ -75,7 +75,7 @@ func TestService_SendMessageNotMemberForbidden(t *testing.T) {
 		},
 	}
 
-	svc := New(&mockUserRepo{}, &mockChatRepo{}, messages, members, testJWTManager())
+	svc := New(&mockUserRepo{}, &mockChatRepo{}, messages, members, &mockReadStateRepo{}, nil, testJWTManager())
 
 	_, err := svc.SendMessage(context.Background(), 1, 2, "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", "hi")
 	if err != domain.ErrForbidden {

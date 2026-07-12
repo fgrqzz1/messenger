@@ -7,11 +7,13 @@ import (
 )
 
 type chatListItemResponse struct {
-	ID              int64   `json:"id"`
-	Type            string  `json:"type"`
-	Title           *string `json:"title,omitempty"`
-	LastMessageBody *string `json:"last_message_body,omitempty"`
-	LastMessageAt   *string `json:"last_message_at,omitempty"`
+	ID                  int64   `json:"id"`
+	Type                string  `json:"type"`
+	Title               *string `json:"title,omitempty"`
+	LastMessageID       *int64  `json:"last_message_id,omitempty"`
+	LastMessageBody     *string `json:"last_message_body,omitempty"`
+	LastMessageAt       *string `json:"last_message_at,omitempty"`
+	MyLastReadMessageID int64   `json:"my_last_read_message_id"`
 }
 
 func (h *Handler) ListChats(w http.ResponseWriter, r *http.Request) {
@@ -35,11 +37,13 @@ func (h *Handler) ListChats(w http.ResponseWriter, r *http.Request) {
 			lastAt = &formatted
 		}
 		resp = append(resp, chatListItemResponse{
-			ID:              item.ID,
-			Type:            string(item.Type),
-			Title:           item.Title,
-			LastMessageBody: item.LastMessageBody,
-			LastMessageAt:   lastAt,
+			ID:                  item.ID,
+			Type:                string(item.Type),
+			Title:               item.Title,
+			LastMessageID:       item.LastMessageID,
+			LastMessageBody:     item.LastMessageBody,
+			LastMessageAt:       lastAt,
+			MyLastReadMessageID: item.MyLastReadMessageID,
 		})
 	}
 

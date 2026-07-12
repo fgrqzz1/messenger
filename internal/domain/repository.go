@@ -30,3 +30,9 @@ type MemberRepository interface {
 	ListUserIDs(ctx context.Context, chatID int64) ([]int64, error)
 	ListByChat(ctx context.Context, chatID int64) ([]ChatMember, error)
 }
+
+type ReadStateRepository interface {
+	UpsertReadState(ctx context.Context, chatID, userID, messageID int64) (int64, error)
+	GetReadState(ctx context.Context, chatID int64) ([]ChatReadState, error)
+	IsReadByAll(ctx context.Context, chatID, messageID, excludeUserID int64) (bool, error)
+}

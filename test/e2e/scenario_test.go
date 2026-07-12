@@ -51,10 +51,12 @@ func newE2EEnv(t *testing.T) *e2eEnv {
 	chatRepo := postgres.NewChatRepository(db)
 	messageRepo := postgres.NewMessageRepository(db)
 	memberRepo := postgres.NewMemberRepository(db)
-
-	svc := service.New(userRepo, chatRepo, messageRepo, memberRepo, jwtManager)
+	readStateRepo := postgres.NewReadStateRepository(db)
 
 	hub := wshandler.NewHub()
+	notifier := wshandler.NewHubReadNotifier(hub, memberRepo, slog.Default())
+	svc := service.New(userRepo, chatRepo, messageRepo, memberRepo, readStateRepo, notifier, jwtManager)
+
 	wsHandler := wshandler.NewHandler(svc, jwtManager, hub, wshandler.Config{}, slog.Default())
 
 	mux := http.NewServeMux()

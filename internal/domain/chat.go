@@ -35,9 +35,11 @@ type ChatMember struct {
 }
 
 type ChatListItem struct {
-	ID              int64
-	Type            ChatType
-	Title           *string
-	LastMessageBody *string
-	LastMessageAt   *time.Time
+	ID                  int64
+	Type                ChatType
+	Title               *string
+	LastMessageID       *int64
+	LastMessageBody     *string
+	LastMessageAt       *time.Time
+	MyLastReadMessageID int64
 }

@@ -1,0 +1,43 @@
+.root {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.sending {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.sent {
+  color: var(--text-secondary);
+}
+
+.read {
+  color: var(--accent);
+}
+
+.icon {
+  display: block;
+}
+
+.check {
+  stroke: currentColor;
+}
+
+/* Вторая галочка: старт с secondary, затем заливка в accent за 180ms */
+.checkSecond {
+  stroke: var(--text-secondary);
+  animation: fillSecondCheck 180ms ease-out forwards;
+}
+
+@keyframes fillSecondCheck {
+  from {
+    stroke: var(--text-secondary);
+  }
+  to {
+    stroke: var(--accent);
+  }
+}

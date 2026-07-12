@@ -47,7 +47,7 @@ func TestService_AddMemberNonAdminForbidden(t *testing.T) {
 		},
 	}
 
-	svc := New(&mockUserRepo{}, chats, &mockMessageRepo{}, members, testJWTManager())
+	svc := New(&mockUserRepo{}, chats, &mockMessageRepo{}, members, &mockReadStateRepo{}, nil, testJWTManager())
 
 	err := svc.AddMember(context.Background(), adminID, chatID, newUser)
 	if !errors.Is(err, domain.ErrForbidden) {
@@ -91,7 +91,7 @@ func TestService_AddMemberAdminSuccess(t *testing.T) {
 		},
 	}
 
-	svc := New(users, chats, &mockMessageRepo{}, members, testJWTManager())
+	svc := New(users, chats, &mockMessageRepo{}, members, &mockReadStateRepo{}, nil, testJWTManager())
 
 	if err := svc.AddMember(context.Background(), adminID, chatID, newUser); err != nil {
 		t.Fatalf("AddMember: %v", err)

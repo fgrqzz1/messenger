@@ -52,3 +52,7 @@ func NewMessageRepository(db *DB) *MessageRepository {
 func NewMemberRepository(db *DB) *MemberRepository {
 	return &MemberRepository{db: db}
 }
+
+func NewReadStateRepository(db *DB) *ReadStateRepository {
+	return &ReadStateRepository{db: db}
+}
