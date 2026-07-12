@@ -10,6 +10,7 @@ import { useReadState } from '../../hooks/useReadState'
 import { useWebSocket } from '../../hooks/useWebSocket'
 import { MembersPanel } from '../MembersPanel/MembersPanel'
 import { SearchPanel } from '../SearchPanel/SearchPanel'
+import { Avatar } from '../Avatar/Avatar'
 import {
   MessageStatus,
   toMessageStatusKind,
@@ -22,6 +23,7 @@ type ChatWindowProps = {
   chatId: number | null
   chatTitle: string | null
   chatType: 'direct' | 'group' | null
+  avatarUserId: number | null
 }
 
 function resolveSenderName(
@@ -42,7 +44,7 @@ function resizeTextarea(element: HTMLTextAreaElement): void {
   element.style.height = `${Math.min(element.scrollHeight, 120)}px`
 }
 
-export function ChatWindow({ chatId, chatTitle, chatType }: ChatWindowProps) {
+export function ChatWindow({ chatId, chatTitle, chatType, avatarUserId }: ChatWindowProps) {
   const { currentUser } = useAuth()
   const { membersPanelRequest } = useActiveChat()
   const { isNarrow, toggleSidebar } = useSidebar()
@@ -149,6 +151,9 @@ export function ChatWindow({ chatId, chatTitle, chatType }: ChatWindowProps) {
             onClick={chatId !== null ? openMembers : undefined}
             disabled={chatId === null}
           >
+            {chatId !== null && avatarUserId !== null && chatTitle && (
+              <Avatar userId={avatarUserId} login={chatTitle} size="sm" />
+            )}
             <h1 className={styles.headerTitle}>{headerTitle}</h1>
           </button>
           <div className={styles.headerActions}>
@@ -292,7 +297,7 @@ export function ChatWindow({ chatId, chatTitle, chatType }: ChatWindowProps) {
 }
 
 export function ConnectedChatWindow() {
-  const { chats, peerNames } = useChats()
+  const { chats, peerNames, peerUserIds } = useChats()
   const { activeChatId } = useActiveChat()
 
   const activeChat = useMemo(
@@ -300,11 +305,19 @@ export function ConnectedChatWindow() {
     [activeChatId, chats],
   )
 
+  const chatTitle = activeChat ? getChatDisplayName(activeChat, peerNames) : null
+  const avatarUserId = activeChat
+    ? activeChat.type === 'direct' && peerUserIds[activeChat.id] != null
+      ? peerUserIds[activeChat.id]!
+      : activeChat.id
+    : null
+
   return (
     <ChatWindow
       chatId={activeChat?.id ?? null}
-      chatTitle={activeChat ? getChatDisplayName(activeChat, peerNames) : null}
+      chatTitle={chatTitle}
       chatType={activeChat?.type ?? null}
+      avatarUserId={avatarUserId}
     />
   )
 }

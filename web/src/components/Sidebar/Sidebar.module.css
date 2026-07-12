@@ -68,8 +68,9 @@
 
 .chatItem {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
   padding: 12px 16px;
   cursor: pointer;
   border-left: 3px solid transparent;
@@ -82,6 +83,14 @@
 .chatItemActive {
   background: var(--bg-elevated);
   border-left-color: var(--accent);
+}
+
+.chatBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .chatRow {
@@ -145,12 +154,48 @@
 .footer {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
   border-top: 1px solid var(--border);
   font-family: var(--font-mono);
   font-size: 12px;
   color: var(--text-secondary);
+}
+
+.profileBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+  padding: 4px 6px;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+}
+
+.profileBtn:hover {
+  background: var(--bg-elevated);
+}
+
+.profileLogin {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-heading);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.connection {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
 .statusDot {

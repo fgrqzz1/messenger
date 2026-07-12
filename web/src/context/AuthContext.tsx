@@ -17,6 +17,7 @@ type AuthContextValue = {
   login: (login: string, password: string) => Promise<void>
   register: (login: string, password: string) => Promise<void>
   logout: () => void
+  patchCurrentUser: (patch: Partial<User>) => void
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -41,6 +42,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     authApi.clearTokens()
   }, [])
 
+  const patchCurrentUser = useCallback((patch: Partial<User>) => {
+    authApi.patchCurrentUser(patch)
+  }, [])
+
   useEffect(() => {
     configureClient({ onSessionExpired: logout })
   }, [logout])
@@ -55,8 +60,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const value = useMemo<AuthContextValue>(
-    () => ({ isAuthenticated, currentUser, login, register, logout }),
-    [isAuthenticated, currentUser, login, register, logout],
+    () => ({
+      isAuthenticated,
+      currentUser,
+      login,
+      register,
+      logout,
+      patchCurrentUser,
+    }),
+    [isAuthenticated, currentUser, login, register, logout, patchCurrentUser],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

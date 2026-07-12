@@ -69,6 +69,15 @@ export function clearTokens(): void {
   notifyListeners()
 }
 
+/** Обновляет поля текущего пользователя в памяти (например после PATCH /me). */
+export function patchCurrentUser(patch: Partial<User>): void {
+  if (!currentUser) {
+    return
+  }
+  currentUser = { ...currentUser, ...patch }
+  notifyListeners()
+}
+
 export function subscribeAuth(listener: AuthListener): () => void {
   listeners.add(listener)
   return () => listeners.delete(listener)

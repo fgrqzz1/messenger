@@ -90,3 +90,53 @@ func TestUserRepository_SearchByLogin(t *testing.T) {
 		t.Fatalf("PasswordHash leaked: %q", found[0].PasswordHash)
 	}
 }
+
+func TestUserRepository_UpdateLogin(t *testing.T) {
+	db := newTestDB(t)
+	repo := NewUserRepository(db)
+	ctx := context.Background()
+
+	alice, err := repo.Create(ctx, "alice", "hash")
+	if err != nil {
+		t.Fatalf("Create alice: %v", err)
+	}
+	if _, err := repo.Create(ctx, "bob", "hash"); err != nil {
+		t.Fatalf("Create bob: %v", err)
+	}
+
+	updated, err := repo.UpdateLogin(ctx, alice.ID, "alice2")
+	if err != nil {
+		t.Fatalf("UpdateLogin: %v", err)
+	}
+	if updated.Login != "alice2" || updated.PasswordHash != "" {
+		t.Fatalf("unexpected user: %+v", updated)
+	}
+
+	_, err = repo.UpdateLogin(ctx, alice.ID, "bob")
+	if !errors.Is(err, domain.ErrConflict) {
+		t.Fatalf("UpdateLogin conflict error = %v, want ErrConflict", err)
+	}
+}
+
+func TestUserRepository_UpdatePasswordHash(t *testing.T) {
+	db := newTestDB(t)
+	repo := NewUserRepository(db)
+	ctx := context.Background()
+
+	alice, err := repo.Create(ctx, "alice", "old-hash")
+	if err != nil {
+		t.Fatalf("Create: %v", err)
+	}
+
+	if err := repo.UpdatePasswordHash(ctx, alice.ID, "new-hash"); err != nil {
+		t.Fatalf("UpdatePasswordHash: %v", err)
+	}
+
+	got, err := repo.GetByID(ctx, alice.ID)
+	if err != nil {
+		t.Fatalf("GetByID: %v", err)
+	}
+	if got.PasswordHash != "new-hash" {
+		t.Fatalf("PasswordHash = %q, want new-hash", got.PasswordHash)
+	}
+}

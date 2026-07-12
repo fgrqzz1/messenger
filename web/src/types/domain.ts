@@ -32,6 +32,13 @@ export type User = {
   login: string
 }
 
+/** Ответ GET /me и PATCH /me */
+export type MeUser = {
+  id: number
+  login: string
+  created_at: string
+}
+
 export type TokenPair = {
   access_token: string
   refresh_token: string

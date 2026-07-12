@@ -69,7 +69,7 @@ export function CreateChatModal({ open, onClose }: CreateChatModalProps) {
     setError(null)
     try {
       const chat = await createDirectChat(user.id)
-      upsertCreatedChat(chat, user.login)
+      upsertCreatedChat(chat, { login: user.login, userId: user.id })
       openCreatedChat(chat.id, false)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Не удалось создать чат')

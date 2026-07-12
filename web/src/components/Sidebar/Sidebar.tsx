@@ -1,16 +1,23 @@
 import { useEffect, useMemo, useState } from 'react'
 import { getChatDisplayName } from '../../api/chats'
 import { useActiveChat } from '../../context/ActiveChatContext'
+import { useAuth } from '../../context/AuthContext'
 import { useSidebar } from '../../context/SidebarContext'
 import { useChats } from '../../hooks/useChats'
 import { useWebSocket } from '../../hooks/useWebSocket'
 import { chatHasUnread } from '../../utils/deliveryStatus'
 import { formatChatTime } from '../../utils/formatChatTime'
+import { Avatar } from '../Avatar/Avatar'
 import { CreateChatModal } from '../CreateChatModal/CreateChatModal'
 import styles from './Sidebar.module.css'
 
-export function Sidebar() {
-  const { chats, loading, error, peerNames } = useChats()
+type SidebarProps = {
+  onOpenProfile: () => void
+}
+
+export function Sidebar({ onOpenProfile }: SidebarProps) {
+  const { currentUser } = useAuth()
+  const { chats, loading, error, peerNames, peerUserIds } = useChats()
   const { activeChatId, setActiveChatId } = useActiveChat()
   const { status } = useWebSocket()
   const { isNarrow, sidebarOpen, closeSidebar } = useSidebar()
@@ -84,6 +91,11 @@ export function Sidebar() {
           !error &&
           filteredChats.map((chat) => {
             const unread = chatHasUnread(chat)
+            const name = getChatDisplayName(chat, peerNames)
+            const avatarId =
+              chat.type === 'direct' && peerUserIds[chat.id] != null
+                ? peerUserIds[chat.id]!
+                : chat.id
             return (
               <li
                 key={chat.id}
@@ -95,33 +107,51 @@ export function Sidebar() {
                 role="button"
                 tabIndex={0}
               >
-                <div className={styles.chatRow}>
-                  <h2 className={styles.chatName}>{getChatDisplayName(chat, peerNames)}</h2>
-                  <div className={styles.chatMeta}>
-                    {unread && (
-                      <span className={styles.unreadDot} aria-label="Есть непрочитанные" />
-                    )}
-                    <span className={styles.chatTime}>
-                      {formatChatTime(chat.last_message_at)}
-                    </span>
+                <Avatar userId={avatarId} login={name} size="sm" />
+                <div className={styles.chatBody}>
+                  <div className={styles.chatRow}>
+                    <h2 className={styles.chatName}>{name}</h2>
+                    <div className={styles.chatMeta}>
+                      {unread && (
+                        <span className={styles.unreadDot} aria-label="Есть непрочитанные" />
+                      )}
+                      <span className={styles.chatTime}>
+                        {formatChatTime(chat.last_message_at)}
+                      </span>
+                    </div>
                   </div>
+                  <p className={styles.chatPreview}>
+                    {chat.last_message_body ?? 'Нет сообщений'}
+                  </p>
                 </div>
-                <p className={styles.chatPreview}>
-                  {chat.last_message_body ?? 'Нет сообщений'}
-                </p>
               </li>
             )
           })}
       </ul>
 
       <footer className={styles.footer}>
-        <span
-          className={`${styles.statusDot} ${isOnline ? styles.statusDotOnline : styles.statusDotReconnecting}`}
-          aria-hidden="true"
+        <button
+          type="button"
+          className={styles.profileBtn}
+          onClick={onOpenProfile}
+          aria-label="Открыть профиль"
         >
-          {isOnline ? '●' : '○'}
-        </span>
-        <span>{isOnline ? 'online' : 'reconnecting'}</span>
+          {currentUser && (
+            <Avatar userId={currentUser.id} login={currentUser.login} size="sm" />
+          )}
+          <span className={styles.profileLogin}>
+            {currentUser?.login ?? 'Профиль'}
+          </span>
+        </button>
+        <div className={styles.connection}>
+          <span
+            className={`${styles.statusDot} ${isOnline ? styles.statusDotOnline : styles.statusDotReconnecting}`}
+            aria-hidden="true"
+          >
+            {isOnline ? '●' : '○'}
+          </span>
+          <span>{isOnline ? 'online' : 'reconnecting'}</span>
+        </div>
       </footer>
 
       <CreateChatModal open={createOpen} onClose={() => setCreateOpen(false)} />

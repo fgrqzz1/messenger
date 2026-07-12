@@ -104,4 +104,43 @@ func (r *UserRepository) SearchByLogin(ctx context.Context, query string, exclud
 	return users, nil
 }
 
+func (r *UserRepository) UpdateLogin(ctx context.Context, userID int64, login string) (*domain.User, error) {
+	const q = `
+		UPDATE users
+		SET login = $2
+		WHERE id = $1
+		RETURNING id, login, created_at
+	`
+
+	var u domain.User
+	err := r.db.pool.QueryRow(ctx, q, userID, login).Scan(
+		&u.ID,
+		&u.Login,
+		&u.CreatedAt,
+	)
+	if err != nil {
+		return nil, mapError(err)
+	}
+
+	return &u, nil
+}
+
+func (r *UserRepository) UpdatePasswordHash(ctx context.Context, userID int64, passwordHash string) error {
+	const q = `
+		UPDATE users
+		SET password_hash = $2
+		WHERE id = $1
+	`
+
+	tag, err := r.db.pool.Exec(ctx, q, userID, passwordHash)
+	if err != nil {
+		return mapError(err)
+	}
+	if tag.RowsAffected() == 0 {
+		return domain.ErrNotFound
+	}
+
+	return nil
+}
+
 var _ domain.UserRepository = (*UserRepository)(nil)

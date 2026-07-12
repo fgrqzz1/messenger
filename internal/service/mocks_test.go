@@ -7,10 +7,12 @@ import (
 )
 
 type mockUserRepo struct {
-	createFn        func(ctx context.Context, login, passwordHash string) (*domain.User, error)
-	getByLoginFn    func(ctx context.Context, login string) (*domain.User, error)
-	getByIDFn       func(ctx context.Context, id int64) (*domain.User, error)
-	searchByLoginFn func(ctx context.Context, query string, excludeUserID int64, limit int) ([]domain.User, error)
+	createFn             func(ctx context.Context, login, passwordHash string) (*domain.User, error)
+	getByLoginFn         func(ctx context.Context, login string) (*domain.User, error)
+	getByIDFn            func(ctx context.Context, id int64) (*domain.User, error)
+	searchByLoginFn      func(ctx context.Context, query string, excludeUserID int64, limit int) ([]domain.User, error)
+	updateLoginFn        func(ctx context.Context, userID int64, login string) (*domain.User, error)
+	updatePasswordHashFn func(ctx context.Context, userID int64, passwordHash string) error
 }
 
 func (m *mockUserRepo) Create(ctx context.Context, login, passwordHash string) (*domain.User, error) {
@@ -30,6 +32,20 @@ func (m *mockUserRepo) SearchByLogin(ctx context.Context, query string, excludeU
 		return m.searchByLoginFn(ctx, query, excludeUserID, limit)
 	}
 	return nil, nil
+}
+
+func (m *mockUserRepo) UpdateLogin(ctx context.Context, userID int64, login string) (*domain.User, error) {
+	if m.updateLoginFn != nil {
+		return m.updateLoginFn(ctx, userID, login)
+	}
+	return nil, nil
+}
+
+func (m *mockUserRepo) UpdatePasswordHash(ctx context.Context, userID int64, passwordHash string) error {
+	if m.updatePasswordHashFn != nil {
+		return m.updatePasswordHashFn(ctx, userID, passwordHash)
+	}
+	return nil
 }
 
 type mockChatRepo struct {

@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"errors"
-	"strings"
 
 	"messenger/internal/domain"
 	"messenger/pkg/jwt"
@@ -11,9 +10,12 @@ import (
 )
 
 func (s *Service) Register(ctx context.Context, login, rawPassword string) (*domain.User, error) {
-	login = strings.TrimSpace(login)
-	if login == "" || rawPassword == "" {
-		return nil, domain.ErrValidation
+	login, err := validateLogin(login)
+	if err != nil {
+		return nil, err
+	}
+	if err := validatePassword(rawPassword); err != nil {
+		return nil, err
 	}
 
 	hash, err := password.Hash(rawPassword)
@@ -31,9 +33,12 @@ func (s *Service) Register(ctx context.Context, login, rawPassword string) (*dom
 }
 
 func (s *Service) Login(ctx context.Context, login, rawPassword string) (accessToken, refreshToken string, err error) {
-	login = strings.TrimSpace(login)
-	if login == "" || rawPassword == "" {
-		return "", "", domain.ErrValidation
+	login, err = validateLogin(login)
+	if err != nil {
+		return "", "", err
+	}
+	if err := validatePassword(rawPassword); err != nil {
+		return "", "", err
 	}
 
 	user, err := s.users.GetByLogin(ctx, login)

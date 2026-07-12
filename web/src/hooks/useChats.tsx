@@ -21,6 +21,8 @@ type ReloadChatsOptions = {
 type ChatsContextValue = {
   chats: ChatListItem[]
   peerNames: Record<number, string>
+  /** chatId → peer userId для direct-чатов (цвет аватара). */
+  peerUserIds: Record<number, number>
   loading: boolean
   error: string | null
   /** Обновляет превью; `false`, если чата ещё нет в локальном списке. */
@@ -33,7 +35,10 @@ type ChatsContextValue = {
   /** Поднимает my_last_read_message_id (GREATEST), чтобы снять unread в сайдбаре. */
   advanceMyReadCursor: (chatId: number, messageId: number) => void
   /** Сразу вставляет ответ POST /chats в начало списка (без ожидания WS/рефетча). */
-  upsertCreatedChat: (chat: Chat, peerLogin?: string) => void
+  upsertCreatedChat: (
+    chat: Chat,
+    peer?: { login: string; userId: number },
+  ) => void
   /**
    * Если `chat_id` из `new_message` отсутствует в списке — точечный рефетч GET /chats.
    * Иначе no-op.
@@ -67,13 +72,13 @@ function chatToListItem(chat: Chat): ChatListItem {
   }
 }
 
-async function loadPeerNames(
+async function loadPeers(
   items: ChatListItem[],
   currentUserId: number,
-): Promise<Record<number, string>> {
+): Promise<{ names: Record<number, string>; userIds: Record<number, number> }> {
   const directChats = items.filter((chat) => chat.type === 'direct' && !chat.title)
   if (directChats.length === 0) {
-    return {}
+    return { names: {}, userIds: {} }
   }
 
   const entries = await Promise.all(
@@ -81,26 +86,31 @@ async function loadPeerNames(
       try {
         const members = await fetchChatMembers(chat.id)
         const peer = members.find((member) => member.user_id !== currentUserId)
-        return peer ? ([chat.id, peer.login] as const) : null
+        return peer
+          ? ([chat.id, peer.login, peer.user_id] as const)
+          : null
       } catch {
         return null
       }
     }),
   )
 
-  const next: Record<number, string> = {}
+  const names: Record<number, string> = {}
+  const userIds: Record<number, number> = {}
   for (const entry of entries) {
     if (entry) {
-      next[entry[0]] = entry[1]
+      names[entry[0]] = entry[1]
+      userIds[entry[0]] = entry[2]
     }
   }
-  return next
+  return { names, userIds }
 }
 
 export function ChatsProvider({ children }: { children: ReactNode }) {
   const { isAuthenticated, currentUser } = useAuth()
   const [chats, setChats] = useState<ChatListItem[]>([])
   const [peerNames, setPeerNames] = useState<Record<number, string>>({})
+  const [peerUserIds, setPeerUserIds] = useState<Record<number, number>>({})
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const chatsRef = useRef(chats)
@@ -113,6 +123,7 @@ export function ChatsProvider({ children }: { children: ReactNode }) {
       if (!isAuthenticated || !currentUser) {
         setChats([])
         setPeerNames({})
+        setPeerUserIds({})
         return
       }
 
@@ -130,7 +141,9 @@ export function ChatsProvider({ children }: { children: ReactNode }) {
         try {
           const items = await fetchChats()
           setChats(items)
-          setPeerNames(await loadPeerNames(items, currentUser.id))
+          const peers = await loadPeers(items, currentUser.id)
+          setPeerNames(peers.names)
+          setPeerUserIds(peers.userIds)
         } catch (err: unknown) {
           setError(err instanceof Error ? err.message : 'Не удалось загрузить чаты')
         } finally {
@@ -152,6 +165,7 @@ export function ChatsProvider({ children }: { children: ReactNode }) {
     if (!isAuthenticated) {
       setChats([])
       setPeerNames({})
+      setPeerUserIds({})
       setLoading(false)
       setError(null)
       return
@@ -169,9 +183,14 @@ export function ChatsProvider({ children }: { children: ReactNode }) {
         }
         setChats(items)
         if (currentUser) {
-          setPeerNames(await loadPeerNames(items, currentUser.id))
+          const peers = await loadPeers(items, currentUser.id)
+          if (!cancelled) {
+            setPeerNames(peers.names)
+            setPeerUserIds(peers.userIds)
+          }
         } else {
           setPeerNames({})
+          setPeerUserIds({})
         }
       } catch (err: unknown) {
         if (!cancelled) {
@@ -246,7 +265,7 @@ export function ChatsProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const upsertCreatedChat = useCallback(
-    (chat: Chat, peerLogin?: string) => {
+    (chat: Chat, peer?: { login: string; userId: number }) => {
       const item = chatToListItem(chat)
       setChats((prev) => {
         if (prev.some((existing) => existing.id === chat.id)) {
@@ -255,16 +274,20 @@ export function ChatsProvider({ children }: { children: ReactNode }) {
         return [item, ...prev]
       })
 
-      if (peerLogin) {
-        setPeerNames((prev) => ({ ...prev, [chat.id]: peerLogin }))
+      if (peer) {
+        setPeerNames((prev) => ({ ...prev, [chat.id]: peer.login }))
+        setPeerUserIds((prev) => ({ ...prev, [chat.id]: peer.userId }))
         return
       }
 
       if (chat.type === 'direct' && currentUser) {
         void (async () => {
-          const names = await loadPeerNames([item], currentUser.id)
-          if (names[chat.id]) {
-            setPeerNames((prev) => ({ ...prev, [chat.id]: names[chat.id] }))
+          const peers = await loadPeers([item], currentUser.id)
+          if (peers.names[chat.id]) {
+            setPeerNames((prev) => ({ ...prev, [chat.id]: peers.names[chat.id] }))
+          }
+          if (peers.userIds[chat.id] != null) {
+            setPeerUserIds((prev) => ({ ...prev, [chat.id]: peers.userIds[chat.id] }))
           }
         })()
       }
@@ -286,6 +309,7 @@ export function ChatsProvider({ children }: { children: ReactNode }) {
     () => ({
       chats,
       peerNames,
+      peerUserIds,
       loading,
       error,
       updateChatPreview,
@@ -301,6 +325,7 @@ export function ChatsProvider({ children }: { children: ReactNode }) {
       ensureChatFromMessage,
       loading,
       peerNames,
+      peerUserIds,
       reloadChats,
       updateChatPreview,
       upsertCreatedChat,

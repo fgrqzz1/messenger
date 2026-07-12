@@ -7,6 +7,10 @@ type UserRepository interface {
 	GetByLogin(ctx context.Context, login string) (*User, error)
 	GetByID(ctx context.Context, id int64) (*User, error)
 	SearchByLogin(ctx context.Context, query string, excludeUserID int64, limit int) ([]User, error)
+	// UpdateLogin returns the user without password_hash.
+	UpdateLogin(ctx context.Context, userID int64, login string) (*User, error)
+	// UpdatePasswordHash does not return the hash.
+	UpdatePasswordHash(ctx context.Context, userID int64, passwordHash string) error
 }
 
 type ChatRepository interface {

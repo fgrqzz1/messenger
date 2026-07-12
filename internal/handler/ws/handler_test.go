@@ -42,6 +42,10 @@ func (m *mockUserRepo) GetByID(context.Context, int64) (*domain.User, error)    
 func (m *mockUserRepo) SearchByLogin(context.Context, string, int64, int) ([]domain.User, error) {
 	return nil, nil
 }
+func (m *mockUserRepo) UpdateLogin(context.Context, int64, string) (*domain.User, error) {
+	return nil, nil
+}
+func (m *mockUserRepo) UpdatePasswordHash(context.Context, int64, string) error { return nil }
 
 func (m *mockChatRepo) CreateDirect(context.Context, int64, int64) (*domain.Chat, error) {
 	return nil, nil
