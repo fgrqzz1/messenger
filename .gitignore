@@ -30,4 +30,3 @@ docker-compose.override.yml
 *.log
 
 .cursor/
-docs/

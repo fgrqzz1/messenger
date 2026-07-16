@@ -1,5 +1,11 @@
 # Messenger — веб-клиент
 
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
+[![CSS Modules](https://img.shields.io/badge/CSS-Modules-264de4?logo=css&logoColor=white)](https://github.com/css-modules/css-modules)
+[![WebSocket](https://img.shields.io/badge/WebSocket-realtime-010101?logo=socketdotio&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
+
 React SPA для мессенджера. Стили — CSS-модули, дизайн-токены в `src/styles/tokens.css`.
 
 ## Запуск

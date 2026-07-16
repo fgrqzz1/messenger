@@ -1,5 +1,13 @@
 # Messenger
 
+[![Go](https://img.shields.io/badge/Go-1.26-00ADD8?logo=go&logoColor=white)](https://go.dev/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
+[![WebSocket](https://img.shields.io/badge/WebSocket-realtime-010101?logo=socketdotio&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
+
 Учебный pet-проект мессенджера: регистрация и вход, личные и групповые чаты, доставка сообщений в реальном времени по WebSocket, история с курсорной пагинацией, поиск по подстроке в рамках чата, статусы прочтения, реакции, редактирование сообщений, presence/last seen, светлая/тёмная тема.
 
 Бэкенд — Go (Clean Architecture, `net/http`, PostgreSQL через `pgx`, `gorilla/websocket`). Фронтенд — React + TypeScript + CSS-модули (Vite), без UI-фреймворков.
